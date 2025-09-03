@@ -46,6 +46,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onSwitch
         throw new Error(result.error || 'Erreur lors de l\'envoi du code');
       }
 
+      // Remplir automatiquement le code en mode développement
+      if (result.otp) {
+        setVerificationCode(result.otp);
+      }
+
       setCountdown(110); // 110 secondes avant de pouvoir regénérer
       
       // Décompte
@@ -58,8 +63,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onSwitch
           return prev - 1;
         });
       }, 1000);
-
-      alert('Code de vérification envoyé ! Vérifiez la console pour le code (mode développement)');
 
     } catch (error: any) {
       setError(error.message || 'Erreur lors de l\'envoi du code');

@@ -283,6 +283,7 @@ export class AuthService {
       
       return {
         success: true,
+        otp, // Retourner l'OTP pour remplissage automatique en développement
         message: 'Code de vérification envoyé avec succès'
       };
     } catch (error: any) {
