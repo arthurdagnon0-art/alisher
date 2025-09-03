@@ -117,7 +117,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-gothic-italic text-xl">
+    <div className="min-h-screen bg-gray-50 font-gothic-italic">
       {/* Header */}
       <div className="bg-blue-600 text-white p-4 shadow-lg">
         <div className="flex items-center">
@@ -129,7 +129,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
               <ArrowLeft className="w-5 h-5 xxs:w-6 xxs:h-6" />
             </button>
           )}
-          <h1 className="text-lg xxs:text-xl font-bold flex-1 text-center">Liste des Investissements</h1>
+          <h1 className="text-sm xxs:text-xl font-bold flex-1 text-center">Liste des Investissements</h1>
         </div>
       </div>
 
