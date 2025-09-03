@@ -1,0 +1,538 @@
+import React, { useState } from 'react';
+import { useEffect } from 'react';
+import { Zap, ArrowLeft, Crown } from 'lucide-react';
+import { InvestmentService } from '../services/investmentService';
+
+interface InvestmentsListProps {
+  onBack?: () => void;
+  user?: any;
+}
+
+export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }) => {
+  const [selectedFilter, setSelectedFilter] = useState('fixe1');
+  const [activeTab, setActiveTab] = useState('vip');
+  const [vipPackages, setVipPackages] = useState<any[]>([]);
+  const [stakingPlans, setStakingPlans] = useState<any[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [showInvestModal, setShowInvestModal] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<any>(null);
+  const [investAmount, setInvestAmount] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    loadInvestmentData();
+  }, []);
+
+  const loadInvestmentData = async () => {
+    setIsLoadingData(true);
+    try {
+      // Charger les packages VIP
+      const vipResult = await InvestmentService.getVIPPackages();
+      if (vipResult.success) {
+        setVipPackages(vipResult.data);
+      }
+
+      // Charger les plans de staking
+      const stakingResult = await InvestmentService.getStakingPlans();
+      if (stakingResult.success) {
+        setStakingPlans(stakingResult.data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des données:', error);
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
+
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat('fr-FR').format(amount);
+  };
+
+  const handleInvest = async (packageData: any, type: 'vip' | 'staking') => {
+    setSelectedPackage({ ...packageData, type });
+    setShowInvestModal(true);
+  };
+
+  const confirmInvestment = async () => {
+    if (!investAmount || !selectedPackage || !user) {
+      setError('Informations manquantes');
+      return;
+    }
+
+    const amount = parseFloat(investAmount);
+    if (amount < selectedPackage.min_amount) {
+      setError(`Montant minimum: ${selectedPackage.min_amount.toLocaleString()} FCFA`);
+      return;
+    }
+
+    if (selectedPackage.type === 'vip' && amount > selectedPackage.max_amount) {
+      setError(`Montant maximum: ${selectedPackage.max_amount.toLocaleString()} FCFA`);
+      return;
+    }
+
+    if (amount > user.balance_deposit) {
+      setError('Solde insuffisant');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      let result;
+      if (selectedPackage.type === 'vip') {
+        result = await InvestmentService.createVIPInvestment(user.id, selectedPackage.id, amount);
+      } else {
+        result = await InvestmentService.createStakingInvestment(user.id, selectedPackage.id, amount);
+      }
+
+      if (result.success) {
+        alert(`Investissement ${selectedPackage.type.toUpperCase()} créé avec succès !`);
+        setShowInvestModal(false);
+        setInvestAmount('');
+        // Actualiser les données utilisateur
+        window.location.reload();
+      } else {
+        setError(result.error || 'Erreur lors de l\'investissement');
+      }
+    } catch (error: any) {
+      setError(error.message || 'Erreur lors de l\'investissement');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const filters = [
+    { id: 'VIPs', label: 'VIPs', icon: '📊', src: 'https://i.postimg.cc/SKC9pmqt/vip-icon-1.png' },
+    { id: 'STAKINGS', label: 'STAKINGS', icon: '📈', src: 'https://i.postimg.cc/sDH7YnwK/invest-active.png' }
+
+  ];
+
+  if (isLoadingData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 font-gothic-italic">
+      {/* Header */}
+      <div className="bg-blue-600 text-white p-4 shadow-lg">
+        <div className="flex items-center">
+          {onBack && (
+            <button 
+              onClick={onBack} 
+              className="mr-3 p-2 hover:bg-blue-500 rounded-full transition-all duration-300"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+          )}
+          <h1 className="text-xl font-bold flex-1 text-center">Liste des Investissements</h1>
+        </div>
+      </div>
+
+      <div className="flex min-h-screen">
+        {/* Sidebar */}
+        <div className="w-12 xxs:w-14 xs:w-16 md:w-20 bg-white shadow-sm border-r border-gray-200">
+          <div className="py-1 xxs:py-2 xs:py-3 md:py-4">
+            {filters.map((filter) => (
+              <button
+                key={filter.id}
+                onClick={() => setSelectedFilter(filter.id)}
+                className={`w-full p-1 xxs:p-2 xs:p-3 mb-1 xxs:mb-2 flex flex-col items-center text-[8px] xxs:text-[10px] xs:text-xs transition-all duration-300 ${
+                  selectedFilter === filter.id
+                    ? 'bg-blue-100 text-blue-600 border-r-2 border-blue-600'
+                    : 'text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                <span className="text-xs xxs:text-sm xs:text-base mb-1">
+                  <img src={filter.src} className="w-4 h-4 xxs:w-5 xxs:h-5 xs:w-6 xs:h-6 md:w-7 md:h-7" />
+                </span>
+                <span className="font-medium leading-tight text-center">{filter.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 bg-gray-50">
+          {selectedFilter !== 'activite' ? (
+            <>
+              {/* Tab Navigation */}
+              <div className="bg-white border-b border-gray-200 px-2 xxs:px-3 xs:px-4 pt-2 xxs:pt-3 xs:pt-4">
+                <div className="flex">
+                  <button
+                    onClick={() => setActiveTab('vip')}
+                    className={`flex-1 py-2 xxs:py-3 font-medium text-xs xxs:text-sm xs:text-base transition-all duration-300 ${
+                      activeTab === 'vip'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-r border-gray-300'
+                    }`}
+                  >
+                    VIP Packs
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('staking')}
+                    className={`flex-1 py-2 xxs:py-3 font-medium text-xs xxs:text-sm xs:text-base transition-all duration-300 ${
+                      activeTab === 'staking'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    Staking
+                  </button>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-2 xxs:p-3 xs:p-4 space-y-2 xxs:space-y-3 xs:space-y-4 pb-24">
+                {activeTab === 'vip' && vipPackages.map((vip, index) => (
+                  <div key={vip.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 xxs:p-4 animate-fadeInUp" style={{ animationDelay: `${index * 100}ms` }}>
+                    <div className="flex items-start space-x-2 xxs:space-x-3 xs:space-x-4">
+                      {/* Logo */}
+                      <div className="w-8 h-8 xxs:w-10 xxs:h-10 xs:w-12 xs:h-12 bg-cyan-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-bold text-[6px] xxs:text-[7px] xs:text-[8px] leading-tight text-center font-gothic">Alisher<br/>USMANOV</span>
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2 xxs:mb-3">
+                          <h3 className="font-bold text-gray-900 text-sm xxs:text-base xs:text-lg">{vip.name}</h3>
+                          <span className="bg-yellow-100 text-yellow-800 px-1 xxs:px-2 py-1 rounded text-[10px] xxs:text-xs font-bold flex items-center">
+                            <Crown className="w-2 h-2 xxs:w-3 xxs:h-3 mr-1" />
+                            <span className="font-gothic-italic">{vip.name}</span>
+                          </span>
+                        </div>
+
+                        {/* Compact Stats */}
+                        <div className="space-y-1 xxs:space-y-2 mb-2 xxs:mb-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs xxs:text-sm text-gray-600">Taux:</span>
+                            <span className="text-xs xxs:text-sm text-green-600 font-bold">{vip.daily_rate}%/jour</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs xxs:text-sm text-gray-600">Durée:</span>
+                            <span className="text-xs xxs:text-sm text-orange-600 font-medium">Illimitée</span>
+                          </div>
+                        </div>
+
+                        {/* Bottom Section */}
+                        <div className="flex items-center justify-between">
+                          <div className="text-blue-600 font-bold text-xs xxs:text-sm xs:text-base">
+                            FCFA {formatAmount(vip.min_amount)}
+                            <div className="text-[10px] xxs:text-xs text-gray-500">à {formatAmount(vip.max_amount)}</div>
+                          </div>
+                          <button 
+                            onClick={() => handleInvest({
+                              ...vip,
+                              title: `Titres à revenu fixe - ${vip.name}`
+                            }, 'vip')}
+                            className="bg-blue-600 text-white px-3 xxs:px-4 xs:px-6 py-1 xxs:py-2 rounded-full font-bold text-xs xxs:text-sm hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 flex items-center"
+                          >
+                            <Zap className="w-3 h-3 xxs:w-4 xxs:h-4 mr-1" />
+                            Investir
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {activeTab === 'staking' && stakingPlans.map((plan, index) => (
+                  <div key={plan.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 xxs:p-4 animate-fadeInUp" style={{ animationDelay: `${index * 100}ms` }}>
+                    <div className="flex items-start space-x-2 xxs:space-x-3 xs:space-x-4">
+                      {/* Logo */}
+                      <div className="w-8 h-8 xxs:w-10 xxs:h-10 xs:w-12 xs:h-12 bg-cyan-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-bold text-[6px] xxs:text-[7px] xs:text-[8px] leading-tight text-center font-gothic">Alisher<br/>USMANOV</span>
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2 xxs:mb-3">
+                          <h3 className="font-bold text-gray-900 text-sm xxs:text-base xs:text-lg">{plan.name}</h3>
+                          <span className="bg-green-100 text-green-800 px-1 xxs:px-2 py-1 rounded text-[10px] xxs:text-xs font-bold">
+                            {plan.duration_days}J
+                          </span>
+                        </div>
+
+                        {/* Compact Stats */}
+                        <div className="space-y-1 xxs:space-y-2 mb-2 xxs:mb-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs xxs:text-sm text-gray-600">Taux:</span>
+                            <span className="text-xs xxs:text-sm text-green-600 font-bold">{plan.daily_rate}%/jour</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs xxs:text-sm text-gray-600">Durée:</span>
+                            <span className="text-xs xxs:text-sm text-blue-600 font-medium">{plan.duration_days} jours</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs xxs:text-sm text-gray-600">Total:</span>
+                            <span className="text-xs xxs:text-sm text-purple-600 font-bold">
+                              {(plan.daily_rate * plan.duration_days).toFixed(1)}%
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Bottom Section */}
+                        <div className="flex items-center justify-between">
+                          <div className="text-blue-600 font-bold text-xs xxs:text-sm xs:text-base">
+                            FCFA {formatAmount(plan.min_amount)}
+                          </div>
+                          <button 
+                            onClick={() => handleInvest(plan, 'staking')}
+                            className="bg-green-600 text-white px-3 xxs:px-4 xs:px-6 py-1 xxs:py-2 rounded-full font-bold text-xs xxs:text-sm hover:bg-green-700 transition-all duration-300 transform hover:scale-105 flex items-center"
+                          >
+                            <Zap className="w-3 h-3 xxs:w-4 xxs:h-4 mr-1" />
+                            Staker
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            /* Page Activité */
+            <div className="p-4 pb-24">
+              <div className="text-center py-12">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">📊</span>
+                </div>
+                <h3 className="text-lg font-bold text-gray-600 mb-2">Aucune activité</h3>
+                <p className="text-gray-500">Vos investissements apparaîtront ici</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Investment Modal */}
+      {showInvestModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end animate-fadeIn"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowInvestModal(false);
+              setError('');
+              setInvestAmount('');
+            }
+          }}
+        >
+          <div className="w-full bg-white rounded-t-2xl shadow-2xl animate-slideUp max-h-[90vh] overflow-y-auto">
+            {/* Header avec logo et titre */}
+            <div className="flex items-center space-x-3 p-6 border-b border-gray-100">
+              <div className="w-12 h-12 bg-cyan-400 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-[8px] leading-tight text-center font-gothic">Alisher<br/>USMANOV</span>
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 text-lg">{selectedPackage?.name}</h3>
+                <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-bold flex items-center w-fit">
+                  <Crown className="w-3 h-3 mr-1" />
+                  {selectedPackage?.type === 'vip' ? selectedPackage?.name : `${selectedPackage?.duration_days}J`}
+                </span>
+              </div>
+            </div>
+
+            {/* Contenu du modal */}
+            <div className="p-6 space-y-6">
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-red-600 text-sm">{error}</p>
+                </div>
+              )}
+
+              {/* Informations détaillées */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Prix Unitaire</span>
+                  <span className="font-bold text-blue-600">FCFA{formatAmount(selectedPackage?.min_amount || 0)}</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Revenu</span>
+                  <span className="font-bold text-green-600">{selectedPackage?.daily_rate?.toFixed(1)}%</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Revenu Quotidien</span>
+                  <span className="font-bold text-green-600">
+                    FCFA{investAmount ? formatAmount(Math.round((parseFloat(investAmount) * (selectedPackage?.daily_rate || 0)) / 100)) : formatAmount(Math.round((selectedPackage?.min_amount || 0) * (selectedPackage?.daily_rate || 0) / 100))}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Revenu Total</span>
+                  <span className="font-bold text-purple-600">
+                    {selectedPackage?.type === 'vip' ? (
+                      <span className="text-orange-600">Illimité</span>
+                    ) : (
+                      `FCFA${investAmount 
+                        ? formatAmount(Math.round((parseFloat(investAmount) * (selectedPackage?.daily_rate || 0) * (selectedPackage?.duration_days || 1)) / 100))
+                        : formatAmount(Math.round((selectedPackage?.min_amount || 0) * (selectedPackage?.daily_rate || 0) * (selectedPackage?.duration_days || 1) / 100))
+                      }`
+                    )}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-gray-900">
+                    {selectedPackage?.type === 'vip' ? (
+                      <span className="text-orange-600">∞</span>
+                    ) : (
+                      selectedPackage?.duration_days
+                    )}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Investissement Maximum</span>
+                  
+                </div>
+              </div>
+
+              {/* Sélecteur de quantité */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-gray-600">Part à Acheter</span>
+                  <div className="flex items-center space-x-3">
+                    <button 
+                      onClick={() => {
+                        const current = parseFloat(investAmount) || selectedPackage?.min_amount || 0;
+                        const increment = selectedPackage?.min_amount || 1000;
+                        const newAmount = Math.max(selectedPackage?.min_amount || 0, current - increment);
+                        setInvestAmount(newAmount.toString());
+                      }}
+                      className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center hover:bg-gray-400 transition-colors"
+                    >
+                      -
+                    </button>
+                    <span className="font-bold text-lg min-w-[40px] text-center">
+                      {investAmount ? Math.round(parseFloat(investAmount) / (selectedPackage?.min_amount || 1)) : 1}
+                    </span>
+                    <button 
+                      onClick={() => {
+                        const current = parseFloat(investAmount) || selectedPackage?.min_amount || 0;
+                        const increment = selectedPackage?.min_amount || 1000;
+                        const newAmount = current + increment;
+                        if (selectedPackage?.type === 'vip' && selectedPackage?.max_amount && newAmount <= selectedPackage.max_amount) {
+                          setInvestAmount(newAmount.toString());
+                        } else if (selectedPackage?.type === 'staking') {
+                          setInvestAmount(newAmount.toString());
+                        }
+                      }}
+                      className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center hover:bg-gray-400 transition-colors"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Montant à payer */}
+              <div className="bg-blue-50 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-gray-600">Montant à Payer</span>
+                  <span className="font-bold text-blue-600 text-xl">
+                    FCFA{formatAmount(parseFloat(investAmount) || selectedPackage?.min_amount || 0)}
+                  </span>
+                </div>
+                <input
+                  type="number"
+                  value={investAmount}
+                  onChange={(e) => setInvestAmount(e.target.value)}
+                  placeholder={`Min: ${formatAmount(selectedPackage?.min_amount || 0)}`}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mt-2"
+                />
+              </div>
+
+              {/* Revenu total attendu */}
+              <div className="bg-green-50 rounded-lg p-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Revenu Total Attendu</span>
+                  <span className="font-bold text-green-600 text-xl">
+                    {selectedPackage?.type === 'vip' ? (
+                      <span className="text-orange-600">Illimité</span>
+                    ) : (
+                      `FCFA${formatAmount(Math.round(((parseFloat(investAmount) || selectedPackage?.min_amount || 0) * (selectedPackage?.daily_rate || 0) * (selectedPackage?.duration_days || 1)) / 100))}`
+                    )}
+                  </span>
+                </div>
+                {selectedPackage?.type === 'staking' && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Capital remboursé à l'échéance + revenus quotidiens
+                  </p>
+                )}
+              </div>
+
+              {/* Durée pour staking */}
+              {selectedPackage?.type === 'staking' && (
+                <div className="bg-purple-50 rounded-lg p-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Durée de Blocage</span>
+                    <span className="font-bold text-purple-600 text-xl">
+                      {selectedPackage?.duration_days} Jours
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Fonds bloqués jusqu'à l'échéance
+                  </p>
+                </div>
+              )}
+
+              {/* Solde disponible */}
+              <div className="bg-yellow-50 rounded-lg p-3 border-l-4 border-yellow-400">
+                <div className="text-sm">
+                  <p className="text-gray-700">
+                    <strong>Solde disponible:</strong> 
+                    <span className={`ml-2 font-bold ${
+                      (user?.balance_deposit || 0) >= (parseFloat(investAmount) || selectedPackage?.min_amount || 0)
+                        ? 'text-green-600' 
+                        : 'text-red-600'
+                    }`}>
+                      FCFA{formatAmount(user?.balance_deposit || 0)}
+                    </span>
+                  </p>
+                  {(user?.balance_deposit || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0) && (
+                    <p className="text-red-600 text-xs mt-1">⚠️ Solde insuffisant</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Boutons d'action */}
+            <div className="p-6 border-t border-gray-100 bg-gray-50">
+              <button
+                onClick={confirmInvestment}
+                disabled={isLoading || (user?.balance_deposit || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0)}
+                className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none mb-3"
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Traitement...</span>
+                  </div>
+                ) : (
+                  selectedPackage?.type === 'vip' ? 'Investir Maintenant' : 'Staker Maintenant'
+                )}
+              </button>
+              
+              <button
+                onClick={() => {
+                  setShowInvestModal(false);
+                  setError('');
+                  setInvestAmount('');
+                }}
+                className="w-full bg-gray-200 text-gray-800 py-3 rounded-xl font-medium hover:bg-gray-300 transition-all duration-300"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
