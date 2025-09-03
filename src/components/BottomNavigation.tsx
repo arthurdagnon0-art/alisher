@@ -16,7 +16,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, o
   ];
 
   return (
-    <div className="fixed text-gothic-italic bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 safe-area-inset-bottom shadow-lg">
+    <div className="fixed text-gothic-italic bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 safe-area-inset-bottom shadow-sm">
       <div className="flex items-center justify-around py-1 xxs:py-2">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
