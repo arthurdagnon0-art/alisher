@@ -111,18 +111,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onSwitchToRegiste
               </button>
             </div>
 
-            {/* Identifiants de test */}
+            {/* Aide à la connexion */}
             <div className="mt-6 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
               <div className="flex items-start space-x-3">
                 <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mt-0.5">
                   <span className="text-white text-xs">ℹ</span>
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold text-blue-800 mb-1">Identifiants de Test</h4>
+                  <h4 className="text-sm font-semibold text-blue-800 mb-1">Aide à la Connexion</h4>
                   <p className="text-xs text-blue-700 leading-relaxed">
-                    <strong>Téléphone:</strong> N'importe quel numéro enregistré<br/>
-                    <strong>Mot de passe:</strong> password123<br/>
-                    <span className="text-blue-600">⚠️ Authentification temporaire pour les tests</span>
+                    Utilisez le numéro de téléphone et le mot de passe que vous avez créés lors de votre inscription.
                   </p>
                 </div>
               </div>
