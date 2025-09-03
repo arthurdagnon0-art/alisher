@@ -135,7 +135,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
 
       <div className="flex min-h-screen">
         {/* Sidebar */}
-        <div className="w-10 xxs:w-12 xs:w-14 sm:w-16 md:w-20 bg-white shadow-sm border-r border-gray-200">
+        <div className="w-10 xxs:w-12 xs:w-14 sm:w-16 md:w-20 bg-white shadow-sm border-r border-gray-200 text-sm">
           <div className="py-1 xxs:py-2 xs:py-3 sm:py-4">
             {filters.map((filter) => (
               <button
