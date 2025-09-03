@@ -95,7 +95,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onSwitch
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="text-center text-2xl font-bold text-gray-900 mb-2">
-          Bienvenue à nous rejoindre
+          Bienvenue sur Hope's Invest
         </h2>
         <p className="text-center text-gray-600 mb-8">
           Inscrivez-vous à votre compte
