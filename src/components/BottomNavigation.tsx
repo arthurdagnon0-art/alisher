@@ -12,7 +12,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, o
     { id: 'invest', label: 'Investir', icon: TrendingUp },
     { id: 'invite', label: 'Invite', icon: Users },
     { id: 'billet', label: 'Billet', icon: CreditCard },
-    { id: 'account', label: 'Compt', icon: User },
+    { id: 'account', label: 'Compte', icon: User },
   ];
 
   return (
