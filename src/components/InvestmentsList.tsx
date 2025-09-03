@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useEffect } from 'react';
 import { Zap, ArrowLeft, Crown } from 'lucide-react';
 import { InvestmentService } from '../services/investmentService';
 
@@ -8,7 +9,7 @@ interface InvestmentsListProps {
 }
 
 export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }) => {
-  const [selectedFilter, setSelectedFilter] = useState('VIPs');
+  const [selectedFilter, setSelectedFilter] = useState('fixe1');
   const [activeTab, setActiveTab] = useState('vip');
   const [vipPackages, setVipPackages] = useState<any[]>([]);
   const [stakingPlans, setStakingPlans] = useState<any[]>([]);
@@ -26,11 +27,17 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
   const loadInvestmentData = async () => {
     setIsLoadingData(true);
     try {
+      // Charger les packages VIP
       const vipResult = await InvestmentService.getVIPPackages();
-      if (vipResult.success) setVipPackages(vipResult.data);
+      if (vipResult.success) {
+        setVipPackages(vipResult.data);
+      }
 
+      // Charger les plans de staking
       const stakingResult = await InvestmentService.getStakingPlans();
-      if (stakingResult.success) setStakingPlans(stakingResult.data);
+      if (stakingResult.success) {
+        setStakingPlans(stakingResult.data);
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des données:', error);
     } finally {
@@ -38,10 +45,12 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
     }
   };
 
-  const formatAmount = (amount: number) => new Intl.NumberFormat('fr-FR').format(amount);
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat('fr-FR').format(amount);
+  };
 
-  const handleInvest = (pkg: any, type: 'vip' | 'staking') => {
-    setSelectedPackage({ ...pkg, type });
+  const handleInvest = async (packageData: any, type: 'vip' | 'staking') => {
+    setSelectedPackage({ ...packageData, type });
     setShowInvestModal(true);
   };
 
@@ -50,16 +59,18 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
       setError('Informations manquantes');
       return;
     }
-    const amount = parseFloat(investAmount);
 
+    const amount = parseFloat(investAmount);
     if (amount < selectedPackage.min_amount) {
       setError(`Montant minimum: ${selectedPackage.min_amount.toLocaleString()} FCFA`);
       return;
     }
+
     if (selectedPackage.type === 'vip' && amount > selectedPackage.max_amount) {
       setError(`Montant maximum: ${selectedPackage.max_amount.toLocaleString()} FCFA`);
       return;
     }
+
     if (amount > user.balance_deposit) {
       setError('Solde insuffisant');
       return;
@@ -80,6 +91,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
         alert(`Investissement ${selectedPackage.type.toUpperCase()} créé avec succès !`);
         setShowInvestModal(false);
         setInvestAmount('');
+        // Actualiser les données utilisateur
         window.location.reload();
       } else {
         setError(result.error || 'Erreur lors de l\'investissement');
@@ -90,10 +102,10 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
       setIsLoading(false);
     }
   };
-
   const filters = [
-    { id: 'VIPs', label: 'VIPs', src: 'https://i.postimg.cc/SKC9pmqt/vip-icon-1.png' },
-    { id: 'STAKINGS', label: 'STAKINGS', src: 'https://i.postimg.cc/sDH7YnwK/invest-active.png' }
+    { id: 'VIPs', label: 'VIPs', icon: '📊', src: 'https://i.postimg.cc/SKC9pmqt/vip-icon-1.png' },
+    { id: 'STAKINGS', label: 'STAKINGS', icon: '📈', src: 'https://i.postimg.cc/sDH7YnwK/invest-active.png' }
+
   ];
 
   if (isLoadingData) {
@@ -105,156 +117,202 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-gothic-italic flex flex-col sm:flex-row">
+    <div className="min-h-screen bg-gray-50 font-gothic-italic">
       {/* Header */}
-      <div className="bg-blue-600 text-white p-4 shadow-lg fixed top-0 left-0 right-0 z-40 sm:static">
+      <div className="bg-blue-600 text-white p-4 shadow-lg">
         <div className="flex items-center">
           {onBack && (
-            <button
-              onClick={onBack}
-              className="mr-2 p-2 hover:bg-blue-500 rounded-full transition-all"
+            <button 
+              onClick={onBack} 
+              className="mr-2 xxs:mr-3 p-1 xxs:p-2 hover:bg-blue-500 rounded-full transition-all duration-300"
             >
-              <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+              <ArrowLeft className="w-5 h-5 xxs:w-6 xxs:h-6" />
             </button>
           )}
-          <h1 className="text-lg sm:text-xl font-bold flex-1 text-center">Liste des Investissements</h1>
+          <h1 className="text-lg xxs:text-xl font-bold flex-1 text-center">Liste des Investissements</h1>
         </div>
       </div>
 
-      {/* Sidebar (en bas sur mobile, à gauche sur desktop) */}
-      <div className="w-full sm:w-20 bg-white shadow-sm border-t sm:border-t-0 sm:border-r border-gray-200 flex sm:flex-col justify-around sm:justify-start fixed bottom-0 sm:static z-40">
-        {filters.map((filter) => (
-          <button
-            key={filter.id}
-            onClick={() => setSelectedFilter(filter.id)}
-            className={`flex-1 sm:w-full p-2 sm:p-3 flex flex-col items-center text-xs sm:text-sm ${
-              selectedFilter === filter.id
-                ? 'bg-blue-100 text-blue-600 sm:border-r-2 sm:border-blue-600'
-                : 'text-gray-500 hover:bg-gray-50'
-            }`}
-          >
-            <img src={filter.src} className="w-6 h-6 mb-1" alt={filter.label} />
-            <span className="hidden xxs:block">{filter.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Main content */}
-      <div className="flex-1 pt-16 sm:pt-0 pb-20 sm:pb-0">
-        {/* Tabs */}
-        <div className="bg-white border-b border-gray-200 px-2 sm:px-4 pt-3 sm:pt-4 sticky top-14 sm:top-0 z-30">
-          <div className="flex">
-            <button
-              onClick={() => setActiveTab('vip')}
-              className={`flex-1 py-2 sm:py-3 font-medium text-sm sm:text-base rounded-l-lg ${
-                activeTab === 'vip'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-r'
-              }`}
-            >
-              VIP Packs
-            </button>
-            <button
-              onClick={() => setActiveTab('staking')}
-              className={`flex-1 py-2 sm:py-3 font-medium text-sm sm:text-base rounded-r-lg ${
-                activeTab === 'staking'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Staking
-            </button>
+      <div className="flex min-h-screen">
+        {/* Sidebar */}
+        <div className="w-10 xxs:w-12 xs:w-14 sm:w-16 md:w-20 bg-white shadow-sm border-r border-gray-200">
+          <div className="py-1 xxs:py-2 xs:py-3 sm:py-4">
+            {filters.map((filter) => (
+              <button
+                key={filter.id}
+                onClick={() => setSelectedFilter(filter.id)}
+                className={`w-full p-1 xxs:p-2 xs:p-3 mb-1 xxs:mb-2 flex flex-col items-center text-[7px] xxs:text-[8px] xs:text-[10px] sm:text-xs transition-all duration-300 ${
+                  selectedFilter === filter.id
+                    ? 'bg-blue-100 text-blue-600 border-r-2 border-blue-600'
+                    : 'text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                <span className="text-xs xxs:text-sm xs:text-base mb-0.5 xxs:mb-1">
+                  <img src={filter.src} className="w-3 h-3 xxs:w-4 xxs:h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+                </span>
+                <span className="font-medium leading-tight text-center">{filter.label}</span>
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-2 sm:p-4 space-y-3 sm:space-y-4">
-          {activeTab === 'vip' &&
-            vipPackages.map((vip, i) => (
-              <div key={vip.id} className="bg-white rounded-lg shadow-sm border p-3 sm:p-4">
-                <div className="flex items-start space-x-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-cyan-400 rounded-lg flex items-center justify-center">
-                    <span className="text-white text-[7px] sm:text-[8px] font-bold text-center">Alisher<br />USMANOV</span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-center mb-2">
-                      <h3 className="font-bold text-gray-900 text-sm sm:text-lg">{vip.name}</h3>
-                      <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-bold flex items-center">
-                        <Crown className="w-3 h-3 mr-1" />
-                        {vip.name}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-xs sm:text-sm mb-2">
-                      <span className="text-gray-600">Taux:</span>
-                      <span className="text-green-600 font-bold">{vip.daily_rate}%/jour</span>
-                    </div>
-                    <div className="flex justify-between text-xs sm:text-sm mb-3">
-                      <span className="text-gray-600">Durée:</span>
-                      <span className="text-orange-600 font-medium">Illimitée</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="text-blue-600 font-bold text-xs sm:text-base">
-                        FCFA {formatAmount(vip.min_amount)}
-                        <div className="text-gray-500 text-[10px]">à {formatAmount(vip.max_amount)}</div>
-                      </div>
-                      <button
-                        onClick={() => handleInvest(vip, 'vip')}
-                        className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs sm:text-sm font-bold flex items-center hover:bg-blue-700"
-                      >
-                        <Zap className="w-3 h-3 mr-1" />
-                        Investir
-                      </button>
-                    </div>
-                  </div>
+        {/* Main Content */}
+        <div className="flex-1 bg-gray-50">
+          {selectedFilter !== 'activite' ? (
+            <>
+              {/* Tab Navigation */}
+              <div className="bg-white border-b border-gray-200 px-1 xxs:px-2 xs:px-3 sm:px-4 pt-2 xxs:pt-3 xs:pt-4">
+                <div className="flex">
+                  <button
+                    onClick={() => setActiveTab('vip')}
+                    className={`flex-1 py-2 xxs:py-3 font-medium text-xs xxs:text-sm xs:text-base rounded-l-lg transition-all duration-300 ${
+                      activeTab === 'vip'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-r border-gray-300'
+                    }`}
+                  >
+                    VIP Packs
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('staking')}
+                    className={`flex-1 py-2 xxs:py-3 font-medium text-xs xxs:text-sm xs:text-base rounded-r-lg transition-all duration-300 ${
+                      activeTab === 'staking'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    Staking
+                  </button>
                 </div>
               </div>
-            ))}
 
-          {activeTab === 'staking' &&
-            stakingPlans.map((plan, i) => (
-              <div key={plan.id} className="bg-white rounded-lg shadow-sm border p-3 sm:p-4">
-                <div className="flex items-start space-x-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-cyan-400 rounded-lg flex items-center justify-center">
-                    <span className="text-white text-[7px] sm:text-[8px] font-bold text-center">Alisher<br />USMANOV</span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-center mb-2">
-                      <h3 className="font-bold text-gray-900 text-sm sm:text-lg">{plan.name}</h3>
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold">
-                        {plan.duration_days}J
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-xs sm:text-sm">
-                      <span className="text-gray-600">Taux:</span>
-                      <span className="text-green-600 font-bold">{plan.daily_rate}%/jour</span>
-                    </div>
-                    <div className="flex justify-between text-xs sm:text-sm mb-3">
-                      <span className="text-gray-600">Durée:</span>
-                      <span className="text-blue-600 font-medium">{plan.duration_days} jours</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="text-blue-600 font-bold text-xs sm:text-base">
-                        FCFA {formatAmount(plan.min_amount)}
+              {/* Content */}
+              <div className="p-1 xxs:p-2 xs:p-3 sm:p-4 space-y-2 xxs:space-y-3 xs:space-y-4 pb-24">
+                {activeTab === 'vip' && vipPackages.map((vip, index) => (
+                  <div key={vip.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 xxs:p-3 xs:p-4 animate-fadeInUp" style={{ animationDelay: `${index * 100}ms` }}>
+                    <div className="flex items-start space-x-2 xxs:space-x-3 xs:space-x-4">
+                      {/* Logo */}
+                      <div className="w-7 h-7 xxs:w-8 xxs:h-8 xs:w-10 xs:h-10 sm:w-12 sm:h-12 bg-cyan-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-bold text-[5px] xxs:text-[6px] xs:text-[7px] sm:text-[8px] leading-tight text-center font-gothic">Alisher<br/>USMANOV</span>
                       </div>
-                      <button
-                        onClick={() => handleInvest(plan, 'staking')}
-                        className="bg-green-600 text-white px-3 py-1 rounded-full text-xs sm:text-sm font-bold flex items-center hover:bg-green-700"
-                      >
-                        <Zap className="w-3 h-3 mr-1" />
-                        Staker
-                      </button>
+
+                      {/* Content */}
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1 xxs:mb-2 xs:mb-3">
+                          <h3 className="font-bold text-gray-900 text-xs xxs:text-sm xs:text-base sm:text-lg">{vip.name}</h3>
+                          <span className="bg-yellow-100 text-yellow-800 px-1 xxs:px-2 py-0.5 xxs:py-1 rounded text-[8px] xxs:text-[10px] xs:text-xs font-bold flex items-center">
+                            <Crown className="w-2 h-2 xxs:w-2.5 xxs:h-2.5 xs:w-3 xs:h-3 mr-0.5 xxs:mr-1" />
+                            <span className="font-gothic-italic">{vip.name}</span>
+                          </span>
+                        </div>
+
+                        {/* Compact Stats */}
+                        <div className="space-y-0.5 xxs:space-y-1 xs:space-y-2 mb-1 xxs:mb-2 xs:mb-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-gray-600">Taux:</span>
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-green-600 font-bold">{vip.daily_rate}%/jour</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-gray-600">Durée:</span>
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-orange-600 font-medium">Illimitée</span>
+                          </div>
+                        </div>
+
+                        {/* Bottom Section */}
+                        <div className="flex items-center justify-between">
+                          <div className="text-blue-600 font-bold text-[10px] xxs:text-xs xs:text-sm sm:text-base">
+                            FCFA {formatAmount(vip.min_amount)}
+                            <div className="text-[8px] xxs:text-[10px] xs:text-xs text-gray-500">à {formatAmount(vip.max_amount)}</div>
+                          </div>
+                          <button 
+                            onClick={() => handleInvest({
+                              ...vip,
+                              title: `Titres à revenu fixe - ${vip.name}`
+                            }, 'vip')}
+                            className="bg-blue-600 text-white px-2 xxs:px-3 xs:px-4 sm:px-6 py-1 xxs:py-1.5 xs:py-2 rounded-full font-bold text-[10px] xxs:text-xs xs:text-sm hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 flex items-center"
+                          >
+                            <Zap className="w-2.5 h-2.5 xxs:w-3 xxs:h-3 xs:w-4 xs:h-4 mr-0.5 xxs:mr-1" />
+                            Investir
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ))}
+
+                {activeTab === 'staking' && stakingPlans.map((plan, index) => (
+                  <div key={plan.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 xxs:p-3 xs:p-4 animate-fadeInUp" style={{ animationDelay: `${index * 100}ms` }}>
+                    <div className="flex items-start space-x-2 xxs:space-x-3 xs:space-x-4">
+                      {/* Logo */}
+                      <div className="w-7 h-7 xxs:w-8 xxs:h-8 xs:w-10 xs:h-10 sm:w-12 sm:h-12 bg-cyan-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-bold text-[5px] xxs:text-[6px] xs:text-[7px] sm:text-[8px] leading-tight text-center font-gothic">Alisher<br/>USMANOV</span>
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1 xxs:mb-2 xs:mb-3">
+                          <h3 className="font-bold text-gray-900 text-xs xxs:text-sm xs:text-base sm:text-lg">{plan.name}</h3>
+                          <span className="bg-green-100 text-green-800 px-1 xxs:px-2 py-0.5 xxs:py-1 rounded text-[8px] xxs:text-[10px] xs:text-xs font-bold">
+                            {plan.duration_days}J
+                          </span>
+                        </div>
+
+                        {/* Compact Stats */}
+                        <div className="space-y-0.5 xxs:space-y-1 xs:space-y-2 mb-1 xxs:mb-2 xs:mb-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-gray-600">Taux:</span>
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-green-600 font-bold">{plan.daily_rate}%/jour</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-gray-600">Durée:</span>
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-blue-600 font-medium">{plan.duration_days} jours</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-gray-600">Total:</span>
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-purple-600 font-bold">
+                              {(plan.daily_rate * plan.duration_days).toFixed(1)}%
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Bottom Section */}
+                        <div className="flex items-center justify-between">
+                          <div className="text-blue-600 font-bold text-[10px] xxs:text-xs xs:text-sm sm:text-base">
+                            FCFA {formatAmount(plan.min_amount)}
+                          </div>
+                          <button 
+                            onClick={() => handleInvest(plan, 'staking')}
+                            className="bg-green-600 text-white px-2 xxs:px-3 xs:px-4 sm:px-6 py-1 xxs:py-1.5 xs:py-2 rounded-full font-bold text-[10px] xxs:text-xs xs:text-sm hover:bg-green-700 transition-all duration-300 transform hover:scale-105 flex items-center"
+                          >
+                            <Zap className="w-2.5 h-2.5 xxs:w-3 xxs:h-3 xs:w-4 xs:h-4 mr-0.5 xxs:mr-1" />
+                            Staker
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </>
+          ) : (
+            /* Page Activité */
+            <div className="p-2 xxs:p-3 xs:p-4 pb-24">
+              <div className="text-center py-12">
+                <div className="w-16 h-16 xxs:w-18 xxs:h-18 xs:w-20 xs:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl xxs:text-3xl">📊</span>
+                </div>
+                <h3 className="text-base xxs:text-lg font-bold text-gray-600 mb-2">Aucune activité</h3>
+                <p className="text-sm xxs:text-base text-gray-500">Vos investissements apparaîtront ici</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Modal investissement */}
+      {/* Investment Modal */}
       {showInvestModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center sm:justify-center"
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center sm:justify-center animate-fadeIn"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowInvestModal(false);
@@ -263,52 +321,207 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
             }
           }}
         >
-          <div className="w-full sm:w-auto sm:min-w-[400px] sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
-            {/* header modal */}
-            <div className="flex items-center space-x-3 p-4 border-b">
-              <div className="w-12 h-12 bg-cyan-400 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-[8px] text-center">Alisher<br />USMANOV</span>
+          <div className="w-full sm:w-auto sm:min-w-[400px] sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl animate-slideUp max-h-[90vh] overflow-y-auto">
+            {/* Header avec logo et titre */}
+            <div className="flex items-center space-x-3 p-4 xxs:p-5 xs:p-6 border-b border-gray-100">
+              <div className="w-10 h-10 xxs:w-12 xxs:h-12 bg-cyan-400 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-[8px] leading-tight text-center font-gothic">Alisher<br/>USMANOV</span>
               </div>
               <div>
-                <h3 className="font-bold text-gray-900 text-lg">{selectedPackage?.name}</h3>
+                <h3 className="font-bold text-gray-900 text-base xxs:text-lg">{selectedPackage?.name}</h3>
+                <span className="bg-yellow-100 text-yellow-800 px-1.5 xxs:px-2 py-0.5 xxs:py-1 rounded text-[10px] xxs:text-xs font-bold flex items-center w-fit">
+                  <Crown className="w-2.5 h-2.5 xxs:w-3 xxs:h-3 mr-0.5 xxs:mr-1" />
+                  {selectedPackage?.type === 'vip' ? selectedPackage?.name : `${selectedPackage?.duration_days}J`}
+                </span>
               </div>
             </div>
 
-            {/* contenu modal */}
-            <div className="p-4 space-y-4">
+            {/* Contenu du modal */}
+            <div className="p-4 xxs:p-5 xs:p-6 space-y-4 xxs:space-y-5 xs:space-y-6">
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-red-600 text-sm">{error}</p>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-2 xxs:p-3">
+                  <p className="text-red-600 text-xs xxs:text-sm">{error}</p>
                 </div>
               )}
 
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Montant à Payer</span>
-                <span className="font-bold text-blue-600 text-lg">
-                  FCFA{formatAmount(parseFloat(investAmount) || selectedPackage?.min_amount || 0)}
-                </span>
+              {/* Informations détaillées */}
+              <div className="space-y-2 xxs:space-y-3 xs:space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs xxs:text-sm text-gray-600">Prix Unitaire</span>
+                  <span className="font-bold text-blue-600 text-xs xxs:text-sm">FCFA{formatAmount(selectedPackage?.min_amount || 0)}</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-xs xxs:text-sm text-gray-600">Revenu</span>
+                  <span className="font-bold text-green-600 text-xs xxs:text-sm">{selectedPackage?.daily_rate?.toFixed(1)}%</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-xs xxs:text-sm text-gray-600">Revenu Quotidien</span>
+                  <span className="font-bold text-green-600 text-xs xxs:text-sm">
+                    FCFA{investAmount ? formatAmount(Math.round((parseFloat(investAmount) * (selectedPackage?.daily_rate || 0)) / 100)) : formatAmount(Math.round((selectedPackage?.min_amount || 0) * (selectedPackage?.daily_rate || 0) / 100))}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-xs xxs:text-sm text-gray-600">Revenu Total</span>
+                  <span className="font-bold text-purple-600 text-xs xxs:text-sm">
+                    {selectedPackage?.type === 'vip' ? (
+                      <span className="text-orange-600">Illimité</span>
+                    ) : (
+                      `FCFA${investAmount 
+                        ? formatAmount(Math.round((parseFloat(investAmount) * (selectedPackage?.daily_rate || 0) * (selectedPackage?.duration_days || 1)) / 100))
+                        : formatAmount(Math.round((selectedPackage?.min_amount || 0) * (selectedPackage?.daily_rate || 0) * (selectedPackage?.duration_days || 1) / 100))
+                      }`
+                    )}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-xs xxs:text-sm text-gray-600">Durée</span>
+                  <span className="font-bold text-gray-900 text-xs xxs:text-sm">
+                    {selectedPackage?.type === 'vip' ? (
+                      <span className="text-orange-600">∞</span>
+                    ) : (
+                      `${selectedPackage?.duration_days} jours`
+                    )}
+                  </span>
+                </div>
               </div>
-              <input
-                type="number"
-                value={investAmount}
-                onChange={(e) => setInvestAmount(e.target.value)}
-                placeholder={`Min: ${formatAmount(selectedPackage?.min_amount || 0)}`}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+
+              {/* Sélecteur de quantité */}
+              <div className="bg-gray-50 rounded-lg p-3 xxs:p-4">
+                <div className="flex justify-between items-center mb-2 xxs:mb-3">
+                  <span className="text-xs xxs:text-sm text-gray-600">Part à Acheter</span>
+                  <div className="flex items-center space-x-3">
+                    <button 
+                      onClick={() => {
+                        const current = parseFloat(investAmount) || selectedPackage?.min_amount || 0;
+                        const increment = selectedPackage?.min_amount || 1000;
+                        const newAmount = Math.max(selectedPackage?.min_amount || 0, current - increment);
+                        setInvestAmount(newAmount.toString());
+                      }}
+                      className="w-7 h-7 xxs:w-8 xxs:h-8 bg-gray-300 rounded-full flex items-center justify-center hover:bg-gray-400 transition-colors text-sm xxs:text-base"
+                    >
+                      -
+                    </button>
+                    <span className="font-bold text-base xxs:text-lg min-w-[30px] xxs:min-w-[40px] text-center">
+                      {investAmount ? Math.round(parseFloat(investAmount) / (selectedPackage?.min_amount || 1)) : 1}
+                    </span>
+                    <button 
+                      onClick={() => {
+                        const current = parseFloat(investAmount) || selectedPackage?.min_amount || 0;
+                        const increment = selectedPackage?.min_amount || 1000;
+                        const newAmount = current + increment;
+                        if (selectedPackage?.type === 'vip' && selectedPackage?.max_amount && newAmount <= selectedPackage.max_amount) {
+                          setInvestAmount(newAmount.toString());
+                        } else if (selectedPackage?.type === 'staking') {
+                          setInvestAmount(newAmount.toString());
+                        }
+                      }}
+                      className="w-7 h-7 xxs:w-8 xxs:h-8 bg-gray-300 rounded-full flex items-center justify-center hover:bg-gray-400 transition-colors text-sm xxs:text-base"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Montant à payer */}
+              <div className="bg-blue-50 rounded-lg p-3 xxs:p-4">
+                <div className="flex justify-between items-center mb-2 xxs:mb-3">
+                  <span className="text-xs xxs:text-sm text-gray-600">Montant à Payer</span>
+                  <span className="font-bold text-blue-600 text-base xxs:text-lg xs:text-xl">
+                    FCFA{formatAmount(parseFloat(investAmount) || selectedPackage?.min_amount || 0)}
+                  </span>
+                </div>
+                <input
+                  type="number"
+                  value={investAmount}
+                  onChange={(e) => setInvestAmount(e.target.value)}
+                  placeholder={`Min: ${formatAmount(selectedPackage?.min_amount || 0)}`}
+                  className="w-full px-3 py-2 xxs:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mt-2 text-sm xxs:text-base"
+                />
+              </div>
+
+              {/* Revenu total attendu */}
+              <div className="bg-green-50 rounded-lg p-3 xxs:p-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs xxs:text-sm text-gray-600">Revenu Total Attendu</span>
+                  <span className="font-bold text-green-600 text-base xxs:text-lg xs:text-xl">
+                    {selectedPackage?.type === 'vip' ? (
+                      <span className="text-orange-600">Illimité</span>
+                    ) : (
+                      `FCFA${formatAmount(Math.round(((parseFloat(investAmount) || selectedPackage?.min_amount || 0) * (selectedPackage?.daily_rate || 0) * (selectedPackage?.duration_days || 1)) / 100))}`
+                    )}
+                  </span>
+                </div>
+                {selectedPackage?.type === 'staking' && (
+                  <p className="text-[10px] xxs:text-xs text-gray-500 mt-1 xxs:mt-2">
+                    Capital remboursé à l'échéance + revenus quotidiens
+                  </p>
+                )}
+              </div>
+
+              {/* Durée pour staking */}
+              {selectedPackage?.type === 'staking' && (
+                <div className="bg-purple-50 rounded-lg p-3 xxs:p-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs xxs:text-sm text-gray-600">Durée de Blocage</span>
+                    <span className="font-bold text-purple-600 text-base xxs:text-lg xs:text-xl">
+                      {selectedPackage?.duration_days} Jours
+                    </span>
+                  </div>
+                  <p className="text-[10px] xxs:text-xs text-gray-500 mt-1 xxs:mt-2">
+                    Fonds bloqués jusqu'à l'échéance
+                  </p>
+                </div>
+              )}
+
+              {/* Solde disponible */}
+              <div className="bg-yellow-50 rounded-lg p-2 xxs:p-3 border-l-4 border-yellow-400">
+                <div className="text-xs xxs:text-sm">
+                  <p className="text-gray-700">
+                    <strong>Solde disponible:</strong> 
+                    <span className={`ml-2 font-bold ${
+                      (user?.balance_deposit || 0) >= (parseFloat(investAmount) || selectedPackage?.min_amount || 0)
+                        ? 'text-green-600' 
+                        : 'text-red-600'
+                    }`}>
+                      FCFA{formatAmount(user?.balance_deposit || 0)}
+                    </span>
+                  </p>
+                  {(user?.balance_deposit || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0) && (
+                    <p className="text-red-600 text-[10px] xxs:text-xs mt-1">⚠️ Solde insuffisant</p>
+                  )}
+                </div>
+              </div>
             </div>
 
-            {/* actions */}
-            <div className="p-4 border-t bg-gray-50">
+            {/* Boutons d'action */}
+            <div className="p-4 xxs:p-5 xs:p-6 border-t border-gray-100 bg-gray-50">
               <button
                 onClick={confirmInvestment}
-                disabled={isLoading}
-                className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all disabled:opacity-50 mb-3"
+                disabled={isLoading || (user?.balance_deposit || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0)}
+                className="w-full bg-blue-600 text-white py-3 xxs:py-4 rounded-xl font-bold text-base xxs:text-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none mb-3"
               >
-                {isLoading ? 'Traitement...' : selectedPackage?.type === 'vip' ? 'Investir Maintenant' : 'Staker Maintenant'}
+                {isLoading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Traitement...</span>
+                  </div>
+                ) : (
+                  selectedPackage?.type === 'vip' ? 'Investir Maintenant' : 'Staker Maintenant'
+                )}
               </button>
+              
               <button
-                onClick={() => setShowInvestModal(false)}
-                className="w-full bg-gray-200 text-gray-800 py-2 rounded-xl font-medium hover:bg-gray-300 transition-all"
+                onClick={() => {
+                  setShowInvestModal(false);
+                  setError('');
+                  setInvestAmount('');
+                }}
+                className="w-full bg-gray-200 text-gray-800 py-2 xxs:py-3 rounded-xl font-medium hover:bg-gray-300 transition-all duration-300 text-sm xxs:text-base"
               >
                 Annuler
               </button>
