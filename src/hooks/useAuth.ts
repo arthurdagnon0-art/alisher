@@ -28,6 +28,40 @@ export const useAuth = () => {
     checkLocalSession();
   }, []);
 
+  const verifyOTP = async (phone: string, code: string, type: 'registration' | 'login' | 'withdrawal') => {
+    try {
+      console.log('Vérification OTP:', { phone, type });
+      
+      const response = await supabase.functions.invoke('verify-otp', {
+        body: { phone, code, type }
+      });
+
+      console.log('Réponse verify-otp:', response);
+
+      if (response.error) {
+        console.error('Erreur Edge Function:', response.error);
+        throw new Error('Erreur de connexion au serveur');
+      }
+
+      const { data } = response;
+      
+      if (!data) {
+        throw new Error('Aucune réponse du serveur');
+      }
+      
+      return data;
+    } catch (error: any) {
+      console.error('Erreur vérification OTP:', error);
+      
+      // Gestion spécifique des erreurs réseau
+      if (error.message?.includes('Failed to fetch') || error.name === 'TypeError') {
+        throw new Error('Problème de connexion. Vérifiez votre connexion internet.');
+      }
+      
+      throw new Error(error.message || 'Erreur lors de la vérification du code');
+    }
+  };
+
   const login = async (phone: string, password: string): Promise<void> => {
     try {
       setIsLoading(true);
@@ -123,5 +157,6 @@ export const useAuth = () => {
     login,
     register,
     logout,
+    verifyOTP,
   };
 };
