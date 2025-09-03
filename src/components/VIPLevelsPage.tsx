@@ -17,7 +17,7 @@ export const VIPLevelsPage: React.FC<VIPLevelsPageProps> = ({ onBack }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-gothic-italic text-xs">
+    <div className="min-h-screen bg-white text-gothic-italic text-2xl">
       {/* Header */}
       <div className="bg-blue-600 text-white p-4 shadow-lg">
         <div className="flex items-center">
