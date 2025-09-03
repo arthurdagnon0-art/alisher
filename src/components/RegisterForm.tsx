@@ -186,7 +186,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onSwitch
                 <input
                   type="text"
                   value={verificationCode}
-                  readOnly
+                  onChange={(e) => setVerificationCode(e.target.value)}
+                  maxLength={6}
                   className={`flex-1 px-3 py-2 border rounded-lg font-mono text-lg font-bold ${
                     verificationCode 
                       ? 'bg-blue-50 border-blue-200 text-blue-600' 
@@ -204,16 +205,14 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onSwitch
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
                   ) : countdown > 0 ? (
                     `${countdown}s`
-                  ) : verificationCode ? (
-                    'Renvoyer'
                   ) : (
                     'Envoyer'
                   )}
                 </button>
               </div>
-              {verificationCode && (
-                <p className="text-xs text-blue-600 mt-1">✓ Code envoyé automatiquement</p>
-              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Entrez le code reçu par SMS
+              </p>
             </div>
 
 

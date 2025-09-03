@@ -60,6 +60,26 @@ export const useAuth = () => {
     try {
       setIsLoading(true);
       
+      // Vérifier l'OTP avant l'inscription
+      const { data: otpData, error: otpError } = await supabase.functions.invoke('verify-otp', {
+        body: {
+          phone: `${country === 'BJ' ? '+229' : 
+                   country === 'TG' ? '+228' :
+                   country === 'CI' ? '+225' :
+                   country === 'CM' ? '+237' :
+                   country === 'SN' ? '+221' :
+                   country === 'BF' ? '+226' :
+                   country === 'GA' ? '+241' :
+                   country === 'CD' ? '+243' : '+229'}${phone}`,
+          code: otp,
+          type: 'registration'
+        }
+      });
+
+      if (otpError || !otpData.valid) {
+        throw new Error('Code de vérification invalide ou expiré');
+      }
+
       const result = await AuthService.register({
         phone,
         password,
