@@ -157,7 +157,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 bg-gray-50 text-sm">
+        <div className="flex-1 bg-gray-50 text-xs">
           {selectedFilter !== 'activite' ? (
             <>
               {/* Tab Navigation */}
@@ -187,7 +187,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
               </div>
 
               {/* Content */}
-              <div className="p-1 xxs:p-2 xs:p-3 sm:p-4 space-y-2 xxs:space-y-3 xs:space-y-4 pb-24">
+              <div className="p-1 xxs:p-2 xs:p-3 sm:p-4 space-y-2 xxs:space-y-3 xs:space-y-4 pb-24 texte-xs">
                 {activeTab === 'vip' && vipPackages.map((vip, index) => (
                   <div key={vip.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 xxs:p-3 xs:p-4 animate-fadeInUp" style={{ animationDelay: `${index * 100}ms` }}>
                     <div className="flex items-start space-x-2 xxs:space-x-3 xs:space-x-4">
