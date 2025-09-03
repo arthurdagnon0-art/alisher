@@ -67,7 +67,7 @@ export const useAuth = () => {
       };
       const fullPhone = `${phoneCountryCodes[country] || '+229'}${phone}`;
       
-      const otpResult = await AuthService.verifyOTP(fullPhone, otp, 'registration');
+      const otpResult = await AuthService.verifyOTP(fullPhone, otp);
       if (!otpResult.success) {
         throw new Error(otpResult.error || 'Code de vérification invalide');
       }

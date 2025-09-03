@@ -40,17 +40,16 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onSwitch
       };
       const fullPhone = `${phoneCountryCodes[selectedCountry] || '+229'}${phone}`;
       
-      const result = await AuthService.sendOTP(fullPhone, selectedCountry);
+      const result = await AuthService.sendOTP(fullPhone);
       
       if (!result.success) {
         throw new Error(result.error || 'Erreur lors de l\'envoi du code');
       }
 
-      // Remplir automatiquement le code en mode développement
-      if (result.otp) {
-        setVerificationCode(result.otp);
-        console.log(`🔑 Code auto-rempli: ${result.otp}`);
-      }
+      // En mode développement, utiliser un code fixe pour les tests
+      const devOTP = '123456';
+      setVerificationCode(devOTP);
+      console.log(`🔑 Code de test auto-rempli: ${devOTP}`);
 
       setCountdown(110); // 110 secondes avant de pouvoir regénérer
       
