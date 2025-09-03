@@ -157,7 +157,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 bg-gray-50">
+        <div className="flex-1 bg-gray-50 text-sm">
           {selectedFilter !== 'activite' ? (
             <>
               {/* Tab Navigation */}
