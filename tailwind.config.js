@@ -23,16 +23,18 @@ export default {
         'ripple': 'ripple 0.6s linear',
       },
       screens: {
-        'xxs': '280px',
-        'xs': '320px',
-        'sm': '375px',
-        'md': '414px',
+        'xxs': '280px',    // Galaxy Fold, très petits écrans
+        'xs': '320px',     // iPhone SE, petits écrans
+        'sm': '375px',     // iPhone standard
+        'md': '414px',     // iPhone Plus
         'md-land': {'raw': '(min-width: 568px) and (orientation: landscape)'},
-        'lg': '768px',
+        'lg': '768px',     // Tablettes
         'xl': '1024px',
         '2xl': '1280px',
-        'fold': {'raw': '(max-width: 280px)'},
-        'narrow': {'raw': '(max-width: 320px) and (max-height: 568px)'},
+        'fold': {'raw': '(max-width: 280px)'},                              // Galaxy Fold spécifique
+        'narrow': {'raw': '(max-width: 320px) and (max-height: 568px)'},    // Écrans étroits
+        'tiny': {'raw': '(max-width: 280px) and (max-height: 653px)'},      // Très petits écrans
+        'compact': {'raw': '(max-width: 375px) and (max-height: 667px)'},   // iPhone SE, écrans compacts
       },
     },
   },

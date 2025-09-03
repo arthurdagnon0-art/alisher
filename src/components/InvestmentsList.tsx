@@ -124,31 +124,31 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
           {onBack && (
             <button 
               onClick={onBack} 
-              className="mr-3 p-2 hover:bg-blue-500 rounded-full transition-all duration-300"
+              className="mr-2 xxs:mr-3 p-1 xxs:p-2 hover:bg-blue-500 rounded-full transition-all duration-300"
             >
-              <ArrowLeft className="w-6 h-6" />
+              <ArrowLeft className="w-5 h-5 xxs:w-6 xxs:h-6" />
             </button>
           )}
-          <h1 className="text-xl font-bold flex-1 text-center">Liste des Investissements</h1>
+          <h1 className="text-lg xxs:text-xl font-bold flex-1 text-center">Liste des Investissements</h1>
         </div>
       </div>
 
       <div className="flex min-h-screen">
         {/* Sidebar */}
-        <div className="w-12 xxs:w-14 xs:w-16 md:w-20 bg-white shadow-sm border-r border-gray-200">
-          <div className="py-1 xxs:py-2 xs:py-3 md:py-4">
+        <div className="w-10 xxs:w-12 xs:w-14 sm:w-16 md:w-20 bg-white shadow-sm border-r border-gray-200">
+          <div className="py-1 xxs:py-2 xs:py-3 sm:py-4">
             {filters.map((filter) => (
               <button
                 key={filter.id}
                 onClick={() => setSelectedFilter(filter.id)}
-                className={`w-full p-1 xxs:p-2 xs:p-3 mb-1 xxs:mb-2 flex flex-col items-center text-[8px] xxs:text-[10px] xs:text-xs transition-all duration-300 ${
+                className={`w-full p-1 xxs:p-2 xs:p-3 mb-1 xxs:mb-2 flex flex-col items-center text-[7px] xxs:text-[8px] xs:text-[10px] sm:text-xs transition-all duration-300 ${
                   selectedFilter === filter.id
                     ? 'bg-blue-100 text-blue-600 border-r-2 border-blue-600'
                     : 'text-gray-500 hover:bg-gray-50'
                 }`}
               >
-                <span className="text-xs xxs:text-sm xs:text-base mb-1">
-                  <img src={filter.src} className="w-4 h-4 xxs:w-5 xxs:h-5 xs:w-6 xs:h-6 md:w-7 md:h-7" />
+                <span className="text-xs xxs:text-sm xs:text-base mb-0.5 xxs:mb-1">
+                  <img src={filter.src} className="w-3 h-3 xxs:w-4 xxs:h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
                 </span>
                 <span className="font-medium leading-tight text-center">{filter.label}</span>
               </button>
@@ -161,11 +161,11 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
           {selectedFilter !== 'activite' ? (
             <>
               {/* Tab Navigation */}
-              <div className="bg-white border-b border-gray-200 px-2 xxs:px-3 xs:px-4 pt-2 xxs:pt-3 xs:pt-4">
+              <div className="bg-white border-b border-gray-200 px-1 xxs:px-2 xs:px-3 sm:px-4 pt-2 xxs:pt-3 xs:pt-4">
                 <div className="flex">
                   <button
                     onClick={() => setActiveTab('vip')}
-                    className={`flex-1 py-2 xxs:py-3 font-medium text-xs xxs:text-sm xs:text-base transition-all duration-300 ${
+                    className={`flex-1 py-2 xxs:py-3 font-medium text-xs xxs:text-sm xs:text-base rounded-l-lg transition-all duration-300 ${
                       activeTab === 'vip'
                         ? 'bg-blue-600 text-white'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-r border-gray-300'
@@ -175,7 +175,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                   </button>
                   <button
                     onClick={() => setActiveTab('staking')}
-                    className={`flex-1 py-2 xxs:py-3 font-medium text-xs xxs:text-sm xs:text-base transition-all duration-300 ${
+                    className={`flex-1 py-2 xxs:py-3 font-medium text-xs xxs:text-sm xs:text-base rounded-r-lg transition-all duration-300 ${
                       activeTab === 'staking'
                         ? 'bg-blue-600 text-white'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -187,51 +187,51 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
               </div>
 
               {/* Content */}
-              <div className="p-2 xxs:p-3 xs:p-4 space-y-2 xxs:space-y-3 xs:space-y-4 pb-24">
+              <div className="p-1 xxs:p-2 xs:p-3 sm:p-4 space-y-2 xxs:space-y-3 xs:space-y-4 pb-24">
                 {activeTab === 'vip' && vipPackages.map((vip, index) => (
-                  <div key={vip.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 xxs:p-4 animate-fadeInUp" style={{ animationDelay: `${index * 100}ms` }}>
+                  <div key={vip.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 xxs:p-3 xs:p-4 animate-fadeInUp" style={{ animationDelay: `${index * 100}ms` }}>
                     <div className="flex items-start space-x-2 xxs:space-x-3 xs:space-x-4">
                       {/* Logo */}
-                      <div className="w-8 h-8 xxs:w-10 xxs:h-10 xs:w-12 xs:h-12 bg-cyan-400 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <span className="text-white font-bold text-[6px] xxs:text-[7px] xs:text-[8px] leading-tight text-center font-gothic">Alisher<br/>USMANOV</span>
+                      <div className="w-7 h-7 xxs:w-8 xxs:h-8 xs:w-10 xs:h-10 sm:w-12 sm:h-12 bg-cyan-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-bold text-[5px] xxs:text-[6px] xs:text-[7px] sm:text-[8px] leading-tight text-center font-gothic">Alisher<br/>USMANOV</span>
                       </div>
 
                       {/* Content */}
                       <div className="flex-1">
-                        <div className="flex items-center justify-between mb-2 xxs:mb-3">
-                          <h3 className="font-bold text-gray-900 text-sm xxs:text-base xs:text-lg">{vip.name}</h3>
-                          <span className="bg-yellow-100 text-yellow-800 px-1 xxs:px-2 py-1 rounded text-[10px] xxs:text-xs font-bold flex items-center">
-                            <Crown className="w-2 h-2 xxs:w-3 xxs:h-3 mr-1" />
+                        <div className="flex items-center justify-between mb-1 xxs:mb-2 xs:mb-3">
+                          <h3 className="font-bold text-gray-900 text-xs xxs:text-sm xs:text-base sm:text-lg">{vip.name}</h3>
+                          <span className="bg-yellow-100 text-yellow-800 px-1 xxs:px-2 py-0.5 xxs:py-1 rounded text-[8px] xxs:text-[10px] xs:text-xs font-bold flex items-center">
+                            <Crown className="w-2 h-2 xxs:w-2.5 xxs:h-2.5 xs:w-3 xs:h-3 mr-0.5 xxs:mr-1" />
                             <span className="font-gothic-italic">{vip.name}</span>
                           </span>
                         </div>
 
                         {/* Compact Stats */}
-                        <div className="space-y-1 xxs:space-y-2 mb-2 xxs:mb-3">
+                        <div className="space-y-0.5 xxs:space-y-1 xs:space-y-2 mb-1 xxs:mb-2 xs:mb-3">
                           <div className="flex justify-between items-center">
-                            <span className="text-xs xxs:text-sm text-gray-600">Taux:</span>
-                            <span className="text-xs xxs:text-sm text-green-600 font-bold">{vip.daily_rate}%/jour</span>
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-gray-600">Taux:</span>
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-green-600 font-bold">{vip.daily_rate}%/jour</span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-xs xxs:text-sm text-gray-600">Durée:</span>
-                            <span className="text-xs xxs:text-sm text-orange-600 font-medium">Illimitée</span>
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-gray-600">Durée:</span>
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-orange-600 font-medium">Illimitée</span>
                           </div>
                         </div>
 
                         {/* Bottom Section */}
                         <div className="flex items-center justify-between">
-                          <div className="text-blue-600 font-bold text-xs xxs:text-sm xs:text-base">
+                          <div className="text-blue-600 font-bold text-[10px] xxs:text-xs xs:text-sm sm:text-base">
                             FCFA {formatAmount(vip.min_amount)}
-                            <div className="text-[10px] xxs:text-xs text-gray-500">à {formatAmount(vip.max_amount)}</div>
+                            <div className="text-[8px] xxs:text-[10px] xs:text-xs text-gray-500">à {formatAmount(vip.max_amount)}</div>
                           </div>
                           <button 
                             onClick={() => handleInvest({
                               ...vip,
                               title: `Titres à revenu fixe - ${vip.name}`
                             }, 'vip')}
-                            className="bg-blue-600 text-white px-3 xxs:px-4 xs:px-6 py-1 xxs:py-2 rounded-full font-bold text-xs xxs:text-sm hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 flex items-center"
+                            className="bg-blue-600 text-white px-2 xxs:px-3 xs:px-4 sm:px-6 py-1 xxs:py-1.5 xs:py-2 rounded-full font-bold text-[10px] xxs:text-xs xs:text-sm hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 flex items-center"
                           >
-                            <Zap className="w-3 h-3 xxs:w-4 xxs:h-4 mr-1" />
+                            <Zap className="w-2.5 h-2.5 xxs:w-3 xxs:h-3 xs:w-4 xs:h-4 mr-0.5 xxs:mr-1" />
                             Investir
                           </button>
                         </div>
@@ -241,35 +241,35 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                 ))}
 
                 {activeTab === 'staking' && stakingPlans.map((plan, index) => (
-                  <div key={plan.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 xxs:p-4 animate-fadeInUp" style={{ animationDelay: `${index * 100}ms` }}>
+                  <div key={plan.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 xxs:p-3 xs:p-4 animate-fadeInUp" style={{ animationDelay: `${index * 100}ms` }}>
                     <div className="flex items-start space-x-2 xxs:space-x-3 xs:space-x-4">
                       {/* Logo */}
-                      <div className="w-8 h-8 xxs:w-10 xxs:h-10 xs:w-12 xs:h-12 bg-cyan-400 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <span className="text-white font-bold text-[6px] xxs:text-[7px] xs:text-[8px] leading-tight text-center font-gothic">Alisher<br/>USMANOV</span>
+                      <div className="w-7 h-7 xxs:w-8 xxs:h-8 xs:w-10 xs:h-10 sm:w-12 sm:h-12 bg-cyan-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-bold text-[5px] xxs:text-[6px] xs:text-[7px] sm:text-[8px] leading-tight text-center font-gothic">Alisher<br/>USMANOV</span>
                       </div>
 
                       {/* Content */}
                       <div className="flex-1">
-                        <div className="flex items-center justify-between mb-2 xxs:mb-3">
-                          <h3 className="font-bold text-gray-900 text-sm xxs:text-base xs:text-lg">{plan.name}</h3>
-                          <span className="bg-green-100 text-green-800 px-1 xxs:px-2 py-1 rounded text-[10px] xxs:text-xs font-bold">
+                        <div className="flex items-center justify-between mb-1 xxs:mb-2 xs:mb-3">
+                          <h3 className="font-bold text-gray-900 text-xs xxs:text-sm xs:text-base sm:text-lg">{plan.name}</h3>
+                          <span className="bg-green-100 text-green-800 px-1 xxs:px-2 py-0.5 xxs:py-1 rounded text-[8px] xxs:text-[10px] xs:text-xs font-bold">
                             {plan.duration_days}J
                           </span>
                         </div>
 
                         {/* Compact Stats */}
-                        <div className="space-y-1 xxs:space-y-2 mb-2 xxs:mb-3">
+                        <div className="space-y-0.5 xxs:space-y-1 xs:space-y-2 mb-1 xxs:mb-2 xs:mb-3">
                           <div className="flex justify-between items-center">
-                            <span className="text-xs xxs:text-sm text-gray-600">Taux:</span>
-                            <span className="text-xs xxs:text-sm text-green-600 font-bold">{plan.daily_rate}%/jour</span>
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-gray-600">Taux:</span>
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-green-600 font-bold">{plan.daily_rate}%/jour</span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-xs xxs:text-sm text-gray-600">Durée:</span>
-                            <span className="text-xs xxs:text-sm text-blue-600 font-medium">{plan.duration_days} jours</span>
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-gray-600">Durée:</span>
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-blue-600 font-medium">{plan.duration_days} jours</span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-xs xxs:text-sm text-gray-600">Total:</span>
-                            <span className="text-xs xxs:text-sm text-purple-600 font-bold">
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-gray-600">Total:</span>
+                            <span className="text-[10px] xxs:text-xs xs:text-sm text-purple-600 font-bold">
                               {(plan.daily_rate * plan.duration_days).toFixed(1)}%
                             </span>
                           </div>
@@ -277,14 +277,14 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
 
                         {/* Bottom Section */}
                         <div className="flex items-center justify-between">
-                          <div className="text-blue-600 font-bold text-xs xxs:text-sm xs:text-base">
+                          <div className="text-blue-600 font-bold text-[10px] xxs:text-xs xs:text-sm sm:text-base">
                             FCFA {formatAmount(plan.min_amount)}
                           </div>
                           <button 
                             onClick={() => handleInvest(plan, 'staking')}
-                            className="bg-green-600 text-white px-3 xxs:px-4 xs:px-6 py-1 xxs:py-2 rounded-full font-bold text-xs xxs:text-sm hover:bg-green-700 transition-all duration-300 transform hover:scale-105 flex items-center"
+                            className="bg-green-600 text-white px-2 xxs:px-3 xs:px-4 sm:px-6 py-1 xxs:py-1.5 xs:py-2 rounded-full font-bold text-[10px] xxs:text-xs xs:text-sm hover:bg-green-700 transition-all duration-300 transform hover:scale-105 flex items-center"
                           >
-                            <Zap className="w-3 h-3 xxs:w-4 xxs:h-4 mr-1" />
+                            <Zap className="w-2.5 h-2.5 xxs:w-3 xxs:h-3 xs:w-4 xs:h-4 mr-0.5 xxs:mr-1" />
                             Staker
                           </button>
                         </div>
@@ -296,13 +296,13 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
             </>
           ) : (
             /* Page Activité */
-            <div className="p-4 pb-24">
+            <div className="p-2 xxs:p-3 xs:p-4 pb-24">
               <div className="text-center py-12">
-                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">📊</span>
+                <div className="w-16 h-16 xxs:w-18 xxs:h-18 xs:w-20 xs:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl xxs:text-3xl">📊</span>
                 </div>
-                <h3 className="text-lg font-bold text-gray-600 mb-2">Aucune activité</h3>
-                <p className="text-gray-500">Vos investissements apparaîtront ici</p>
+                <h3 className="text-base xxs:text-lg font-bold text-gray-600 mb-2">Aucune activité</h3>
+                <p className="text-sm xxs:text-base text-gray-500">Vos investissements apparaîtront ici</p>
               </div>
             </div>
           )}
@@ -312,7 +312,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
       {/* Investment Modal */}
       {showInvestModal && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end animate-fadeIn"
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center sm:justify-center animate-fadeIn"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowInvestModal(false);
@@ -321,51 +321,51 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
             }
           }}
         >
-          <div className="w-full bg-white rounded-t-2xl shadow-2xl animate-slideUp max-h-[90vh] overflow-y-auto">
+          <div className="w-full sm:w-auto sm:min-w-[400px] sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl animate-slideUp max-h-[90vh] overflow-y-auto">
             {/* Header avec logo et titre */}
-            <div className="flex items-center space-x-3 p-6 border-b border-gray-100">
-              <div className="w-12 h-12 bg-cyan-400 rounded-lg flex items-center justify-center">
+            <div className="flex items-center space-x-3 p-4 xxs:p-5 xs:p-6 border-b border-gray-100">
+              <div className="w-10 h-10 xxs:w-12 xxs:h-12 bg-cyan-400 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-[8px] leading-tight text-center font-gothic">Alisher<br/>USMANOV</span>
               </div>
               <div>
-                <h3 className="font-bold text-gray-900 text-lg">{selectedPackage?.name}</h3>
-                <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-bold flex items-center w-fit">
-                  <Crown className="w-3 h-3 mr-1" />
+                <h3 className="font-bold text-gray-900 text-base xxs:text-lg">{selectedPackage?.name}</h3>
+                <span className="bg-yellow-100 text-yellow-800 px-1.5 xxs:px-2 py-0.5 xxs:py-1 rounded text-[10px] xxs:text-xs font-bold flex items-center w-fit">
+                  <Crown className="w-2.5 h-2.5 xxs:w-3 xxs:h-3 mr-0.5 xxs:mr-1" />
                   {selectedPackage?.type === 'vip' ? selectedPackage?.name : `${selectedPackage?.duration_days}J`}
                 </span>
               </div>
             </div>
 
             {/* Contenu du modal */}
-            <div className="p-6 space-y-6">
+            <div className="p-4 xxs:p-5 xs:p-6 space-y-4 xxs:space-y-5 xs:space-y-6">
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-red-600 text-sm">{error}</p>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-2 xxs:p-3">
+                  <p className="text-red-600 text-xs xxs:text-sm">{error}</p>
                 </div>
               )}
 
               {/* Informations détaillées */}
-              <div className="space-y-4">
+              <div className="space-y-2 xxs:space-y-3 xs:space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Prix Unitaire</span>
-                  <span className="font-bold text-blue-600">FCFA{formatAmount(selectedPackage?.min_amount || 0)}</span>
+                  <span className="text-xs xxs:text-sm text-gray-600">Prix Unitaire</span>
+                  <span className="font-bold text-blue-600 text-xs xxs:text-sm">FCFA{formatAmount(selectedPackage?.min_amount || 0)}</span>
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Revenu</span>
-                  <span className="font-bold text-green-600">{selectedPackage?.daily_rate?.toFixed(1)}%</span>
+                  <span className="text-xs xxs:text-sm text-gray-600">Revenu</span>
+                  <span className="font-bold text-green-600 text-xs xxs:text-sm">{selectedPackage?.daily_rate?.toFixed(1)}%</span>
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Revenu Quotidien</span>
-                  <span className="font-bold text-green-600">
+                  <span className="text-xs xxs:text-sm text-gray-600">Revenu Quotidien</span>
+                  <span className="font-bold text-green-600 text-xs xxs:text-sm">
                     FCFA{investAmount ? formatAmount(Math.round((parseFloat(investAmount) * (selectedPackage?.daily_rate || 0)) / 100)) : formatAmount(Math.round((selectedPackage?.min_amount || 0) * (selectedPackage?.daily_rate || 0) / 100))}
                   </span>
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Revenu Total</span>
-                  <span className="font-bold text-purple-600">
+                  <span className="text-xs xxs:text-sm text-gray-600">Revenu Total</span>
+                  <span className="font-bold text-purple-600 text-xs xxs:text-sm">
                     {selectedPackage?.type === 'vip' ? (
                       <span className="text-orange-600">Illimité</span>
                     ) : (
@@ -378,25 +378,21 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-gray-900">
+                  <span className="text-xs xxs:text-sm text-gray-600">Durée</span>
+                  <span className="font-bold text-gray-900 text-xs xxs:text-sm">
                     {selectedPackage?.type === 'vip' ? (
                       <span className="text-orange-600">∞</span>
                     ) : (
-                      selectedPackage?.duration_days
+                      `${selectedPackage?.duration_days} jours`
                     )}
                   </span>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Investissement Maximum</span>
-                  
                 </div>
               </div>
 
               {/* Sélecteur de quantité */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-gray-600">Part à Acheter</span>
+              <div className="bg-gray-50 rounded-lg p-3 xxs:p-4">
+                <div className="flex justify-between items-center mb-2 xxs:mb-3">
+                  <span className="text-xs xxs:text-sm text-gray-600">Part à Acheter</span>
                   <div className="flex items-center space-x-3">
                     <button 
                       onClick={() => {
@@ -405,11 +401,11 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                         const newAmount = Math.max(selectedPackage?.min_amount || 0, current - increment);
                         setInvestAmount(newAmount.toString());
                       }}
-                      className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center hover:bg-gray-400 transition-colors"
+                      className="w-7 h-7 xxs:w-8 xxs:h-8 bg-gray-300 rounded-full flex items-center justify-center hover:bg-gray-400 transition-colors text-sm xxs:text-base"
                     >
                       -
                     </button>
-                    <span className="font-bold text-lg min-w-[40px] text-center">
+                    <span className="font-bold text-base xxs:text-lg min-w-[30px] xxs:min-w-[40px] text-center">
                       {investAmount ? Math.round(parseFloat(investAmount) / (selectedPackage?.min_amount || 1)) : 1}
                     </span>
                     <button 
@@ -423,7 +419,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                           setInvestAmount(newAmount.toString());
                         }
                       }}
-                      className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center hover:bg-gray-400 transition-colors"
+                      className="w-7 h-7 xxs:w-8 xxs:h-8 bg-gray-300 rounded-full flex items-center justify-center hover:bg-gray-400 transition-colors text-sm xxs:text-base"
                     >
                       +
                     </button>
@@ -432,10 +428,10 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
               </div>
 
               {/* Montant à payer */}
-              <div className="bg-blue-50 rounded-lg p-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-600">Montant à Payer</span>
-                  <span className="font-bold text-blue-600 text-xl">
+              <div className="bg-blue-50 rounded-lg p-3 xxs:p-4">
+                <div className="flex justify-between items-center mb-2 xxs:mb-3">
+                  <span className="text-xs xxs:text-sm text-gray-600">Montant à Payer</span>
+                  <span className="font-bold text-blue-600 text-base xxs:text-lg xs:text-xl">
                     FCFA{formatAmount(parseFloat(investAmount) || selectedPackage?.min_amount || 0)}
                   </span>
                 </div>
@@ -444,15 +440,15 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                   value={investAmount}
                   onChange={(e) => setInvestAmount(e.target.value)}
                   placeholder={`Min: ${formatAmount(selectedPackage?.min_amount || 0)}`}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mt-2"
+                  className="w-full px-3 py-2 xxs:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mt-2 text-sm xxs:text-base"
                 />
               </div>
 
               {/* Revenu total attendu */}
-              <div className="bg-green-50 rounded-lg p-4">
+              <div className="bg-green-50 rounded-lg p-3 xxs:p-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Revenu Total Attendu</span>
-                  <span className="font-bold text-green-600 text-xl">
+                  <span className="text-xs xxs:text-sm text-gray-600">Revenu Total Attendu</span>
+                  <span className="font-bold text-green-600 text-base xxs:text-lg xs:text-xl">
                     {selectedPackage?.type === 'vip' ? (
                       <span className="text-orange-600">Illimité</span>
                     ) : (
@@ -461,7 +457,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                   </span>
                 </div>
                 {selectedPackage?.type === 'staking' && (
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-[10px] xxs:text-xs text-gray-500 mt-1 xxs:mt-2">
                     Capital remboursé à l'échéance + revenus quotidiens
                   </p>
                 )}
@@ -469,22 +465,22 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
 
               {/* Durée pour staking */}
               {selectedPackage?.type === 'staking' && (
-                <div className="bg-purple-50 rounded-lg p-4">
+                <div className="bg-purple-50 rounded-lg p-3 xxs:p-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Durée de Blocage</span>
-                    <span className="font-bold text-purple-600 text-xl">
+                    <span className="text-xs xxs:text-sm text-gray-600">Durée de Blocage</span>
+                    <span className="font-bold text-purple-600 text-base xxs:text-lg xs:text-xl">
                       {selectedPackage?.duration_days} Jours
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-[10px] xxs:text-xs text-gray-500 mt-1 xxs:mt-2">
                     Fonds bloqués jusqu'à l'échéance
                   </p>
                 </div>
               )}
 
               {/* Solde disponible */}
-              <div className="bg-yellow-50 rounded-lg p-3 border-l-4 border-yellow-400">
-                <div className="text-sm">
+              <div className="bg-yellow-50 rounded-lg p-2 xxs:p-3 border-l-4 border-yellow-400">
+                <div className="text-xs xxs:text-sm">
                   <p className="text-gray-700">
                     <strong>Solde disponible:</strong> 
                     <span className={`ml-2 font-bold ${
@@ -496,18 +492,18 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                     </span>
                   </p>
                   {(user?.balance_deposit || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0) && (
-                    <p className="text-red-600 text-xs mt-1">⚠️ Solde insuffisant</p>
+                    <p className="text-red-600 text-[10px] xxs:text-xs mt-1">⚠️ Solde insuffisant</p>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Boutons d'action */}
-            <div className="p-6 border-t border-gray-100 bg-gray-50">
+            <div className="p-4 xxs:p-5 xs:p-6 border-t border-gray-100 bg-gray-50">
               <button
                 onClick={confirmInvestment}
                 disabled={isLoading || (user?.balance_deposit || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0)}
-                className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none mb-3"
+                className="w-full bg-blue-600 text-white py-3 xxs:py-4 rounded-xl font-bold text-base xxs:text-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none mb-3"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center space-x-2">
@@ -525,7 +521,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                   setError('');
                   setInvestAmount('');
                 }}
-                className="w-full bg-gray-200 text-gray-800 py-3 rounded-xl font-medium hover:bg-gray-300 transition-all duration-300"
+                className="w-full bg-gray-200 text-gray-800 py-2 xxs:py-3 rounded-xl font-medium hover:bg-gray-300 transition-all duration-300 text-sm xxs:text-base"
               >
                 Annuler
               </button>
