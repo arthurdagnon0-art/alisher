@@ -2,61 +2,6 @@ import { supabase } from '../lib/supabase';
 import { User } from '../types';
 import bcrypt from 'bcryptjs';
 
-// Stockage temporaire des OTP côté frontend
-interface OTPStorage {
-  phone: string;
-  code: string;
-  type: string;
-  expiresAt: number;
-}
-
-class OTPManager {
-  private static otps: Map<string, OTPStorage> = new Map();
-
-  static generateOTP(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  }
-
-  static storeOTP(phone: string, code: string, type: string): void {
-    const key = `${phone}-${type}`;
-    const expiresAt = Date.now() + (5 * 60 * 1000); // 5 minutes
-    
-    this.otps.set(key, {
-      phone,
-      code,
-      type,
-      expiresAt
-    });
-
-    // Auto-cleanup après expiration
-    setTimeout(() => {
-      this.otps.delete(key);
-    }, 5 * 60 * 1000);
-  }
-
-  static verifyOTP(phone: string, code: string, type: string): boolean {
-    const key = `${phone}-${type}`;
-    const stored = this.otps.get(key);
-
-    if (!stored) {
-      return false;
-    }
-
-    if (Date.now() > stored.expiresAt) {
-      this.otps.delete(key);
-      return false;
-    }
-
-    if (stored.code !== code) {
-      return false;
-    }
-
-    // Supprimer l'OTP après utilisation
-    this.otps.delete(key);
-    return true;
-  }
-}
-
 export class AuthService {
   // Inscription d'un nouvel utilisateur
   static async register(userData: {
