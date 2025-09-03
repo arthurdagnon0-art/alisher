@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { User } from '../types';
 import { AuthService } from '../services/authService';
-import { supabase } from '../lib/supabase';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -27,40 +26,6 @@ export const useAuth = () => {
 
     checkLocalSession();
   }, []);
-
-  const verifyOTP = async (phone: string, code: string, type: 'registration' | 'login' | 'withdrawal') => {
-    try {
-      console.log('Vérification OTP:', { phone, type });
-      
-      const response = await supabase.functions.invoke('verify-otp', {
-        body: { phone, code, type }
-      });
-
-      console.log('Réponse verify-otp:', response);
-
-      if (response.error) {
-        console.error('Erreur Edge Function:', response.error);
-        throw new Error('Erreur de connexion au serveur');
-      }
-
-      const { data } = response;
-      
-      if (!data) {
-        throw new Error('Aucune réponse du serveur');
-      }
-      
-      return data;
-    } catch (error: any) {
-      console.error('Erreur vérification OTP:', error);
-      
-      // Gestion spécifique des erreurs réseau
-      if (error.message?.includes('Failed to fetch') || error.name === 'TypeError') {
-        throw new Error('Problème de connexion. Vérifiez votre connexion internet.');
-      }
-      
-      throw new Error(error.message || 'Erreur lors de la vérification du code');
-    }
-  };
 
   const login = async (phone: string, password: string): Promise<void> => {
     try {
@@ -95,24 +60,10 @@ export const useAuth = () => {
     try {
       setIsLoading(true);
       
-      // Vérifier l'OTP avant l'inscription
-      const { data: otpData, error: otpError } = await supabase.functions.invoke('verify-otp', {
-        body: {
-          phone: `${country === 'BJ' ? '+229' : 
-                   country === 'TG' ? '+228' :
-                   country === 'CI' ? '+225' :
-                   country === 'CM' ? '+237' :
-                   country === 'SN' ? '+221' :
-                   country === 'BF' ? '+226' :
-                   country === 'GA' ? '+241' :
-                   country === 'CD' ? '+243' : '+229'}${phone}`,
-          code: otp,
-          type: 'registration'
-        }
-      });
-
-      if (otpError || !otpData.valid) {
-        throw new Error('Code de vérification invalide ou expiré');
+      // Vérifier l'OTP côté frontend
+      const otpResult = await AuthService.verifyOTP(phone, otp);
+      if (!otpResult.success) {
+        throw new Error(otpResult.error || 'Code de vérification invalide');
       }
 
       const result = await AuthService.register({
@@ -157,6 +108,5 @@ export const useAuth = () => {
     login,
     register,
     logout,
-    verifyOTP,
   };
 };

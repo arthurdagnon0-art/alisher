@@ -2,6 +2,61 @@ import { supabase } from '../lib/supabase';
 import { User } from '../types';
 import bcrypt from 'bcryptjs';
 
+// Stockage temporaire des OTP côté frontend
+interface OTPStorage {
+  phone: string;
+  code: string;
+  type: string;
+  expiresAt: number;
+}
+
+class OTPManager {
+  private static otps: Map<string, OTPStorage> = new Map();
+
+  static generateOTP(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  static storeOTP(phone: string, code: string, type: string): void {
+    const key = `${phone}-${type}`;
+    const expiresAt = Date.now() + (5 * 60 * 1000); // 5 minutes
+    
+    this.otps.set(key, {
+      phone,
+      code,
+      type,
+      expiresAt
+    });
+
+    // Auto-cleanup après expiration
+    setTimeout(() => {
+      this.otps.delete(key);
+    }, 5 * 60 * 1000);
+  }
+
+  static verifyOTP(phone: string, code: string, type: string): boolean {
+    const key = `${phone}-${type}`;
+    const stored = this.otps.get(key);
+
+    if (!stored) {
+      return false;
+    }
+
+    if (Date.now() > stored.expiresAt) {
+      this.otps.delete(key);
+      return false;
+    }
+
+    if (stored.code !== code) {
+      return false;
+    }
+
+    // Supprimer l'OTP après utilisation
+    this.otps.delete(key);
+    return true;
+  }
+}
+
 export class AuthService {
   // Inscription d'un nouvel utilisateur
   static async register(userData: {
@@ -213,10 +268,85 @@ export class AuthService {
     };
   }
 
-  // Envoyer OTP (simulation)
+  // Envoyer OTP (simulation côté frontend)
   static async sendOTP(phone: string) {
-    // Simulation d'envoi d'OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    try {
+      // Générer et stocker l'OTP
+      const otp = OTPManager.generateOTP();
+      OTPManager.storeOTP(phone, otp, 'registration');
+      
+      // Simulation d'envoi SMS
+      console.log(`📱 SMS simulé vers ${phone}: Votre code Alisher USMANOV: ${otp}`);
+      
+      // En production, ici vous appelleriez votre service SMS
+      // await sendSMSViaProvider(phone, `Votre code Alisher USMANOV: ${otp}`);
+      
+      return {
+        success: true,
+        message: 'Code de vérification envoyé avec succès'
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Erreur lors de l\'envoi du code'
+      };
+    }
+  }
+
+  // Vérifier OTP côté frontend
+  static async verifyOTP(phone: string, otp: string) {
+    try {
+      const isValid = OTPManager.verifyOTP(phone, otp, 'registration');
+      
+      return {
+        success: isValid,
+        error: isValid ? null : 'Code de vérification incorrect ou expiré'
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Erreur lors de la vérification du code'
+      };
+    }
+  }
+
+  // Envoyer OTP pour retrait
+  static async sendWithdrawalOTP(phone: string) {
+    try {
+      const otp = OTPManager.generateOTP();
+      OTPManager.storeOTP(phone, otp, 'withdrawal');
+      
+      console.log(`📱 SMS retrait simulé vers ${phone}: Code de retrait: ${otp}`);
+      
+      return {
+        success: true,
+        message: 'Code de retrait envoyé avec succès'
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Erreur lors de l\'envoi du code de retrait'
+      };
+    }
+  }
+
+  // Vérifier OTP de retrait
+  static async verifyWithdrawalOTP(phone: string, otp: string) {
+    try {
+      const isValid = OTPManager.verifyOTP(phone, otp, 'withdrawal');
+      
+      return {
+        success: isValid,
+        error: isValid ? null : 'Code de retrait incorrect ou expiré'
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Erreur lors de la vérification du code de retrait'
+      };
+    }
+  }
+}
     
     // En production, intégrer avec un service SMS réel
     console.log(`OTP pour ${phone}: ${otp}`);

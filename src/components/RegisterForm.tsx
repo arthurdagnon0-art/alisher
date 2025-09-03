@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PhoneInput } from './PhoneInput';
 import { supportedCountries } from '../data/investments';
-import { supabase } from '../lib/supabase';
+import { AuthService } from '../services/authService';
 import {EyeOff, Eye} from 'lucide-react'
 
 interface RegisterFormProps {
@@ -22,14 +22,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onSwitch
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const generateInviteCode = () => {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
-  };
-
-  const generateVerificationCode = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  };
-
   // Envoyer le code de vérification
   const sendVerificationCode = async () => {
     if (!phone || !selectedCountry) {
@@ -41,12 +33,18 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onSwitch
     setError('');
 
     try {
-      // Simulation d'envoi
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Générer le code de vérification automatiquement
-      const newVerificationCode = generateVerificationCode();
-      setVerificationCode(newVerificationCode);
+      // Construire le numéro complet
+      const phoneCountryCodes = {
+        'BJ': '+229', 'TG': '+228', 'CI': '+225', 'CM': '+237',
+        'SN': '+221', 'BF': '+226', 'GA': '+241', 'CD': '+243'
+      };
+      const fullPhone = `${phoneCountryCodes[selectedCountry] || '+229'}${phone}`;
+      
+      const result = await AuthService.sendOTP(fullPhone);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Erreur lors de l\'envoi du code');
+      }
 
       setCountdown(110); // 110 secondes avant de pouvoir regénérer
       
@@ -60,6 +58,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onSwitch
           return prev - 1;
         });
       }, 1000);
+
+      alert('Code de vérification envoyé ! Vérifiez la console pour le code (mode développement)');
 
     } catch (error: any) {
       setError(error.message || 'Erreur lors de l\'envoi du code');
