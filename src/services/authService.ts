@@ -216,20 +216,20 @@ export class AuthService {
   // Envoyer OTP (simulation côté frontend)
   static async sendOTP(phone: string) {
     try {
-      // Générer et stocker l'OTP
-      const otp = OTPManager.generateOTP();
-      OTPManager.storeOTP(phone, otp, 'registration');
-      
-      // Simulation d'envoi SMS
-      console.log(`📱 SMS simulé vers ${phone}: Votre code Alisher USMANOV: ${otp}`);
-      
-      // En production, ici vous appelleriez votre service SMS
-      // await sendSMSViaProvider(phone, `Votre code Alisher USMANOV: ${otp}`);
+      // Appeler l'Edge Function pour envoyer l'OTP
+      const { data, error } = await supabase.functions.invoke('send-sms-otp', {
+        body: {
+          phone,
+          country: phone.substring(1, 4), // Extraire le code pays
+          type: 'registration'
+        }
+      });
+
+      if (error) throw error;
       
       return {
         success: true,
-        otp, // Retourner l'OTP pour remplissage automatique en développement
-        message: 'Code de vérification envoyé avec succès'
+        message: data.message || 'Code de vérification envoyé avec succès'
       };
     } catch (error: any) {
       return {
@@ -242,11 +242,19 @@ export class AuthService {
   // Vérifier OTP côté frontend
   static async verifyOTP(phone: string, otp: string) {
     try {
-      const isValid = OTPManager.verifyOTP(phone, otp, 'registration');
+      const { data, error } = await supabase.functions.invoke('verify-otp', {
+        body: {
+          phone,
+          code: otp,
+          type: 'registration'
+        }
+      });
+
+      if (error) throw error;
       
       return {
-        success: isValid,
-        error: isValid ? null : 'Code de vérification incorrect ou expiré'
+        success: data.valid,
+        error: data.valid ? null : (data.message || 'Code de vérification incorrect ou expiré')
       };
     } catch (error: any) {
       return {
@@ -259,14 +267,19 @@ export class AuthService {
   // Envoyer OTP pour retrait
   static async sendWithdrawalOTP(phone: string) {
     try {
-      const otp = OTPManager.generateOTP();
-      OTPManager.storeOTP(phone, otp, 'withdrawal');
-      
-      console.log(`📱 SMS retrait simulé vers ${phone}: Code de retrait: ${otp}`);
+      const { data, error } = await supabase.functions.invoke('send-sms-otp', {
+        body: {
+          phone,
+          country: phone.substring(1, 4),
+          type: 'withdrawal'
+        }
+      });
+
+      if (error) throw error;
       
       return {
         success: true,
-        message: 'Code de retrait envoyé avec succès'
+        message: data.message || 'Code de retrait envoyé avec succès'
       };
     } catch (error: any) {
       return {
