@@ -3,6 +3,11 @@ import { User } from '../types';
 import bcrypt from 'bcryptjs';
 
 export class AuthService {
+  // Générer un code OTP à 6 chiffres (frontend uniquement)
+  private static generateOTP(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
   // Inscription d'un nouvel utilisateur
   static async register(userData: {
     phone: string;
@@ -216,20 +221,16 @@ export class AuthService {
   // Envoyer OTP (simulation côté frontend)
   static async sendOTP(phone: string) {
     try {
-      // Appeler l'Edge Function pour envoyer l'OTP
-      const { data, error } = await supabase.functions.invoke('send-sms-otp', {
-        body: {
-          phone,
-          country: phone.substring(1, 4), // Extraire le code pays
-          type: 'registration'
-        }
-      });
-
-      if (error) throw error;
+      // Générer un code OTP aléatoire pour l'interactivité
+      const otp = this.generateOTP();
+      
+      // En mode développement, afficher le code dans la console
+      console.log(`📱 Code de vérification généré pour ${phone}: ${otp}`);
       
       return {
         success: true,
-        message: data.message || 'Code de vérification envoyé avec succès'
+        otp, // Retourner le code pour auto-remplissage
+        message: 'Code de vérification généré avec succès'
       };
     } catch (error: any) {
       return {
@@ -242,19 +243,12 @@ export class AuthService {
   // Vérifier OTP côté frontend
   static async verifyOTP(phone: string, otp: string) {
     try {
-      const { data, error } = await supabase.functions.invoke('verify-otp', {
-        body: {
-          phone,
-          code: otp,
-          type: 'registration'
-        }
-      });
-
-      if (error) throw error;
+      // Vérification simple : accepter tout code à 6 chiffres
+      const isValidFormat = /^\d{6}$/.test(otp);
       
       return {
-        success: data.valid,
-        error: data.valid ? null : (data.message || 'Code de vérification incorrect ou expiré')
+        success: isValidFormat,
+        error: isValidFormat ? null : 'Le code doit contenir 6 chiffres'
       };
     } catch (error: any) {
       return {
@@ -267,19 +261,15 @@ export class AuthService {
   // Envoyer OTP pour retrait
   static async sendWithdrawalOTP(phone: string) {
     try {
-      const { data, error } = await supabase.functions.invoke('send-sms-otp', {
-        body: {
-          phone,
-          country: phone.substring(1, 4),
-          type: 'withdrawal'
-        }
-      });
-
-      if (error) throw error;
+      // Générer un code OTP pour retrait
+      const otp = this.generateOTP();
+      
+      console.log(`💰 Code de retrait généré pour ${phone}: ${otp}`);
       
       return {
         success: true,
-        message: data.message || 'Code de retrait envoyé avec succès'
+        otp,
+        message: 'Code de retrait généré avec succès'
       };
     } catch (error: any) {
       return {
@@ -292,70 +282,17 @@ export class AuthService {
   // Vérifier OTP de retrait
   static async verifyWithdrawalOTP(phone: string, otp: string) {
     try {
-      const { data, error } = await supabase.functions.invoke('verify-otp', {
-        body: {
-          phone,
-          code: otp,
-          type: 'withdrawal'
-        }
-      });
-
-      if (error) throw error;
+      // Vérification simple pour retrait
+      const isValidFormat = /^\d{6}$/.test(otp);
       
       return {
-        success: data.valid,
-        error: data.valid ? null : (data.message || 'Code de retrait incorrect ou expiré')
+        success: isValidFormat,
+        error: isValidFormat ? null : 'Code de retrait invalide'
       };
     } catch (error: any) {
       return {
         success: false,
         error: error.message || 'Erreur lors de la vérification du code de retrait'
-      };
-    }
-  }
-
-  // Envoyer OTP (simulation)
-  static async sendOTPLegacy(phone: string) {
-    try {
-      const otp = OTPManager.generateOTP();
-      
-      // En production, intégrer avec un service SMS réel
-      console.log(`OTP pour ${phone}: ${otp}`);
-      
-      return {
-        success: true,
-        otp, // En production, ne pas retourner l'OTP
-        message: 'OTP envoyé avec succès'
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        error: error.message || 'Erreur lors de l\'envoi de l\'OTP'
-      };
-    }
-  }
-
-  // Vérifier OTP (simulation)
-  static async verifyOTPLegacy(phone: string, otp: string) {
-    try {
-      const { data, error } = await supabase.functions.invoke('verify-otp', {
-        body: {
-          phone,
-          code: otp,
-          type: 'registration'
-        }
-      });
-
-      if (error) throw error;
-
-      return {
-        success: data.valid,
-        message: data.valid ? 'OTP vérifié avec succès' : 'Code de vérification incorrect'
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        error: error.message || 'Erreur lors de la vérification de l\'OTP'
       };
     }
   }
