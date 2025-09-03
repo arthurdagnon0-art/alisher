@@ -156,7 +156,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onSwitch
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Entrez le code de parrainage (optionnel)"
               />
-              <p className="text-xs text-gray-500 mt-1">Laissez vide si vous n'avez pas de parrain</p>
+
             </div>
 
             <div>
