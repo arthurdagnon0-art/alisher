@@ -4,7 +4,7 @@ import { PhoneInput } from './PhoneInput';
 import { supportedCountries } from '../data/investments';
 
 interface LoginFormProps {
-  onLogin: (phone: string, otp: string) => void;
+  onLogin: (phone: string, password: string) => void;
   onSwitchToRegister: () => void;
 }
 
@@ -26,11 +26,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onSwitchToRegiste
     setError('');
 
     try {
-      // Simulation d'une connexion
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      onLogin(phone, '123456'); // OTP simulé
-    } catch (error) {
-      setError('Erreur de connexion');
+      await onLogin(phone, password);
+    } catch (error: any) {
+      setError(error.message || 'Erreur de connexion');
     } finally {
       setIsLoading(false);
     }
@@ -111,6 +109,23 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, onSwitchToRegiste
               >
                 Inscrivez-vous
               </button>
+            </div>
+
+            {/* Identifiants de test */}
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+              <div className="flex items-start space-x-3">
+                <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mt-0.5">
+                  <span className="text-white text-xs">ℹ</span>
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-blue-800 mb-1">Identifiants de Test</h4>
+                  <p className="text-xs text-blue-700 leading-relaxed">
+                    <strong>Téléphone:</strong> N'importe quel numéro enregistré<br/>
+                    <strong>Mot de passe:</strong> password123<br/>
+                    <span className="text-blue-600">⚠️ Authentification temporaire pour les tests</span>
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
