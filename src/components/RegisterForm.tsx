@@ -85,7 +85,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onSwitch
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-8 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-8 sm:px-6 lg:px-8 font-gothic-italic">
       <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-4">
         <p className="text-sm text-yellow-700">
           Vous devez vous assurer que votre numéro de téléphone est correct. Pour retirer
