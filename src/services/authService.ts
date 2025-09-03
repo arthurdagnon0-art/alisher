@@ -346,20 +346,30 @@ export class AuthService {
       };
     }
   }
-}
-    
-    // En production, intégrer avec un service SMS réel
-    console.log(`OTP pour ${phone}: ${otp}`);
-    
-    return {
-      success: true,
-      otp, // En production, ne pas retourner l'OTP
-      message: 'OTP envoyé avec succès'
-    };
+
+  // Envoyer OTP (simulation)
+  static async sendOTPLegacy(phone: string) {
+    try {
+      const otp = OTPManager.generateOTP();
+      
+      // En production, intégrer avec un service SMS réel
+      console.log(`OTP pour ${phone}: ${otp}`);
+      
+      return {
+        success: true,
+        otp, // En production, ne pas retourner l'OTP
+        message: 'OTP envoyé avec succès'
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Erreur lors de l\'envoi de l\'OTP'
+      };
+    }
   }
 
   // Vérifier OTP (simulation)
-  static async verifyOTP(phone: string, otp: string) {
+  static async verifyOTPLegacy(phone: string, otp: string) {
     try {
       const { data, error } = await supabase.functions.invoke('verify-otp', {
         body: {
