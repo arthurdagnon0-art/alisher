@@ -61,7 +61,13 @@ export const useAuth = () => {
       setIsLoading(true);
       
       // Vérifier l'OTP côté frontend
-      const otpResult = await AuthService.verifyOTP(phone, otp);
+      const phoneCountryCodes = {
+        'BJ': '+229', 'TG': '+228', 'CI': '+225', 'CM': '+237',
+        'SN': '+221', 'BF': '+226', 'GA': '+241', 'CD': '+243'
+      };
+      const fullPhone = `${phoneCountryCodes[country] || '+229'}${phone}`;
+      
+      const otpResult = await AuthService.verifyOTP(fullPhone, otp, 'registration');
       if (!otpResult.success) {
         throw new Error(otpResult.error || 'Code de vérification invalide');
       }

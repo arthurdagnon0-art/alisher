@@ -279,11 +279,19 @@ export class AuthService {
   // Vérifier OTP de retrait
   static async verifyWithdrawalOTP(phone: string, otp: string) {
     try {
-      const isValid = OTPManager.verifyOTP(phone, otp, 'withdrawal');
+      const { data, error } = await supabase.functions.invoke('verify-otp', {
+        body: {
+          phone,
+          code: otp,
+          type: 'withdrawal'
+        }
+      });
+
+      if (error) throw error;
       
       return {
-        success: isValid,
-        error: isValid ? null : 'Code de retrait incorrect ou expiré'
+        success: data.valid,
+        error: data.valid ? null : (data.message || 'Code de retrait incorrect ou expiré')
       };
     } catch (error: any) {
       return {
