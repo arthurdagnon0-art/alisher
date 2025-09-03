@@ -117,7 +117,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-gothic-italic">
+    <div className="min-h-screen bg-gray-50 font-gothic-italic py-2">
       {/* Header */}
       <div className="bg-blue-600 text-white p-4 shadow-lg">
         <div className="flex items-center">
