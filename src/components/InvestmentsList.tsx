@@ -161,7 +161,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
           {selectedFilter !== 'activite' ? (
             <>
               {/* Tab Navigation */}
-              <div className="bg-white border-b border-gray-200 px-1 xxs:px-2 xs:px-3 sm:px-4 pt-2 xxs:pt-3 xs:pt-4">
+              <div className="bg-white text-sm border-b border-gray-200 px-1 xxs:px-2 xs:px-3 sm:px-4 pt-2 xxs:pt-3 xs:pt-4">
                 <div className="flex">
                   <button
                     onClick={() => setActiveTab('vip')}
