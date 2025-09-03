@@ -117,7 +117,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-gothic-italic py-2">
+    <div className="min-h-screen bg-gray-50 font-gothic-italic">
       {/* Header */}
       <div className="bg-blue-600 text-white p-4 shadow-lg">
         <div className="flex items-center">
@@ -197,7 +197,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                       </div>
 
                       {/* Content */}
-                      <div className="flex-1">
+                      <div className="flex-1 py-2">
                         <div className="flex items-center justify-between mb-1 xxs:mb-2 xs:mb-3">
                           <h3 className="font-bold text-gray-900 text-xs xxs:text-sm xs:text-base sm:text-lg">{vip.name}</h3>
                           <span className="bg-yellow-100 text-yellow-800 px-1 xxs:px-2 py-0.5 xxs:py-1 rounded text-[8px] xxs:text-[10px] xs:text-xs font-bold flex items-center">
