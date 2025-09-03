@@ -46,10 +46,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onSwitch
         throw new Error(result.error || 'Erreur lors de l\'envoi du code');
       }
 
-      // En mode développement, utiliser un code fixe pour les tests
-      const devOTP = '123456';
-      setVerificationCode(devOTP);
-      console.log(`🔑 Code de test auto-rempli: ${devOTP}`);
+      // Auto-remplir le code généré
+      if (result.otp) {
+        setVerificationCode(result.otp);
+        console.log(`🔑 Code auto-rempli: ${result.otp}`);
+      }
 
       setCountdown(110); // 110 secondes avant de pouvoir regénérer
       
