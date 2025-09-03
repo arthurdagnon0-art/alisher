@@ -187,7 +187,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
               </div>
 
               {/* Content */}
-              <div className="p-1 xxs:p-2 xs:p-3 sm:p-4 space-y-2 xxs:space-y-3 xs:space-y-4 pb-24 texte-xs">
+              <div className="p-1 xxs:p-2 xs:p-3 sm:p-4 space-y-2 xxs:space-y-3 xs:space-y-4 pb-24 texte-xs mb-28">
                 {activeTab === 'vip' && vipPackages.map((vip, index) => (
                   <div key={vip.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 xxs:p-3 xs:p-4 animate-fadeInUp" style={{ animationDelay: `${index * 100}ms` }}>
                     <div className="flex items-start space-x-2 xxs:space-x-3 xs:space-x-4">
@@ -197,7 +197,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                       </div>
 
                       {/* Content */}
-                      <div className="flex-1 mb-28">
+                      <div className="flex-1">
                         <div className="flex items-center justify-between mb-1 xxs:mb-2 xs:mb-3">
                           <h3 className="font-bold text-gray-900 text-xs xxs:text-sm xs:text-base sm:text-lg">{vip.name}</h3>
                           <span className="bg-yellow-100 text-yellow-800 px-1 xxs:px-2 py-0.5 xxs:py-1 rounded text-[8px] xxs:text-[10px] xs:text-xs font-bold flex items-center">
