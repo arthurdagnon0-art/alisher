@@ -108,7 +108,8 @@ export const BilletPage: React.FC<BilletPageProps> = ({ user, onBack }) => {
             <ChevronRight className="w-5 h-5" />
           </button>
 
-          <button className="bg-orange-500 bg-opacity-60 text-white rounded-2xl p-4 flex items-center justify-between hover:bg-opacity-80 transition-all duration-300 transform hover:scale-105">
+          <button className="bg-orange-500 bg-opacity-60 text-white rounded-2xl p-4 flex items-center justify-between hover:bg-opacity-80 transition-all duration-300 transform hover:scale-105"
+            onClick={() => setShowRewardsModal(true)}>
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
                 <span className="text-white">📋</span>
