@@ -35,6 +35,14 @@ function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [currentPage, setCurrentPage] = useState('dashboard');
 
+  // Rafraîchir automatiquement toutes les 60 secondes si authentifié
+  React.useEffect(() => {
+    if (isAuthenticated && user?.id) {
+      const interval = setInterval(refreshUserData, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated, user?.id]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -111,14 +119,6 @@ function App() {
       console.error('Erreur lors du rafraîchissement global:', error);
     }
   };
-
-  // Rafraîchir automatiquement toutes les 60 secondes si authentifié
-  React.useEffect(() => {
-    if (isAuthenticated && user?.id) {
-      const interval = setInterval(refreshUserData, 60000);
-      return () => clearInterval(interval);
-    }
-  }, [isAuthenticated, user?.id]);
 
   if (!isAuthenticated) {
     if (showSetupAccount) {
