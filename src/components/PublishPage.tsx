@@ -1,41 +1,51 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Image, Upload, Gift } from 'lucide-react';
+import { ImageService } from '../services/imageService';
 
 interface PublishPageProps {
   onBack: () => void;
   onPublish: (content: string, images: string[]) => void;
+  user: any;
 }
 
-export const PublishPage: React.FC<PublishPageProps> = ({ onBack, onPublish }) => {
+export const PublishPage: React.FC<PublishPageProps> = ({ onBack, onPublish, user }) => {
   const [content, setContent] = useState('');
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (files) {
+    if (files && files.length > 0) {
       setIsUploading(true);
+      setUploadError('');
       
-      // Simuler l'upload d'images avec différentes images
-      const stockImages = [
-        'https://images.pexels.com/photos/534216/pexels-photo-534216.jpeg?auto=compress&cs=tinysrgb&w=400',
-        'https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&w=400',
-        'https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg?auto=compress&cs=tinysrgb&w=400',
-        'https://images.pexels.com/photos/590016/pexels-photo-590016.jpg?auto=compress&cs=tinysrgb&w=400',
-        'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400'
-      ];
-      
-      const newImages = Array.from(files).map((file, index) => 
-        stockImages[index % stockImages.length]
-      );
-      
-      setTimeout(() => {
-        setSelectedImages([...selectedImages, ...newImages]);
+      try {
+        // Uploader les vraies images vers Supabase Storage
+        const result = await ImageService.uploadMultipleImages(files, user?.id);
+        
+        if (result.success && result.urls) {
+          setSelectedImages([...selectedImages, ...result.urls]);
+        } else {
+          setUploadError(result.error || 'Erreur lors de l\'upload');
+        }
+      } catch (error: any) {
+        setUploadError(error.message || 'Erreur lors de l\'upload');
+      } finally {
         setIsUploading(false);
-      }, 1500);
+      }
     }
   };
 
+  const handleRemoveImage = async (index: number) => {
+    const imageUrl = selectedImages[index];
+    
+    // Supprimer de Supabase Storage
+    await ImageService.deleteImage(imageUrl);
+    
+    // Supprimer de la liste locale
+    setSelectedImages(selectedImages.filter((_, i) => i !== index));
+  };
   const handlePublish = () => {
     if (content.trim()) {
       onPublish(content, selectedImages);
@@ -72,6 +82,12 @@ export const PublishPage: React.FC<PublishPageProps> = ({ onBack, onPublish }) =
         <div className="bg-white rounded-lg p-4 shadow-sm">
           <h3 className="font-semibold text-gray-900 mb-4">Télécharger des photos</h3>
           
+          {uploadError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+              <p className="text-red-600 text-sm">{uploadError}</p>
+            </div>
+          )}
+          
           <div className="grid grid-cols-3 gap-3">
             {selectedImages.map((image, index) => (
               <div key={index} className="relative aspect-square">
@@ -81,7 +97,7 @@ export const PublishPage: React.FC<PublishPageProps> = ({ onBack, onPublish }) =
                   className="w-full h-full object-cover rounded-lg"
                 />
                 <button
-                  onClick={() => setSelectedImages(selectedImages.filter((_, i) => i !== index))}
+                  onClick={() => handleRemoveImage(index)}
                   className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs"
                 >
                   ×
@@ -92,7 +108,10 @@ export const PublishPage: React.FC<PublishPageProps> = ({ onBack, onPublish }) =
             {selectedImages.length < 9 && (
               <label className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all duration-300">
                 {isUploading ? (
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <div className="flex flex-col items-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+                    <span className="text-xs text-blue-600">Upload...</span>
+                  </div>
                 ) : (
                   <>
                     <Image className="w-8 h-8 text-gray-400 mb-2" />
@@ -110,6 +129,10 @@ export const PublishPage: React.FC<PublishPageProps> = ({ onBack, onPublish }) =
               </label>
             )}
           </div>
+          
+          <p className="text-xs text-gray-500 mt-3">
+            Formats supportés: JPG, PNG, GIF. Taille max: 5MB par image.
+          </p>
         </div>
 
         {/* Publish Button */}

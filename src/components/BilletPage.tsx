@@ -48,8 +48,15 @@ export const BilletPage: React.FC<BilletPageProps> = ({ user, onBack }) => {
         // Recharger les posts pour afficher le nouveau
         await loadAllPosts();
         
-        // Actualiser les données utilisateur pour refléter le nouveau solde
-        window.location.reload();
+        // Mettre à jour le solde utilisateur localement
+        if (user && result.data?.bonus) {
+          const updatedUser = {
+            ...user,
+            balance_withdrawal: (user.balance_withdrawal || 0) + result.data.bonus,
+            total_earned: (user.total_earned || 0) + result.data.bonus
+          };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
       } else {
         alert(result.error || 'Erreur lors de la publication');
       }

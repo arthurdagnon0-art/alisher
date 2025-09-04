@@ -15,7 +15,20 @@ interface DashboardProps {
 export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
   const [showTelegramModal, setShowTelegramModal] = useState(false);
   const [showTelegramPopup, setShowTelegramPopup] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState(user);
+
+  // Mettre à jour les données utilisateur depuis localStorage
+  React.useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        setCurrentUser(userData);
+      } catch (error) {
+        console.error('Erreur parsing user data:', error);
+      }
+    }
+  }, []);
 
   const floatingActions = [ 
     {
@@ -100,18 +113,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           <div className="text-center mb-3 xxs:mb-4">
             <p className="text-xs xxs:text-sm opacity-90 mb-1 xxs:mb-2">Solde Total</p>
             <p className="text-xl xxs:text-2xl xs:text-3xl font-bold">
-              FCFA{(user?.balance_deposit + user?.balance_withdrawal || 0).toLocaleString()}
+              FCFA{((currentUser?.balance_deposit || 0) + (currentUser?.balance_withdrawal || 0)).toLocaleString()}
             </p>
           </div>
           
           <div className="grid grid-cols-2 gap-2 xxs:gap-3 xs:gap-4">
             <div className="text-center">
               <p className="text-xs xxs:text-sm opacity-90 mb-1">Solde Dépôt</p>
-              <p className="text-base xxs:text-lg xs:text-xl font-bold">FCFA{user?.balance_deposit?.toLocaleString() || '0'}</p>
+              <p className="text-base xxs:text-lg xs:text-xl font-bold">FCFA{currentUser?.balance_deposit?.toLocaleString() || '0'}</p>
             </div>
             <div className="text-center">
               <p className="text-xs xxs:text-sm opacity-90 mb-1">Solde Retrait</p>
-              <p className="text-base xxs:text-lg xs:text-xl font-bold">FCFA{user?.balance_withdrawal?.toLocaleString() || '0'}</p>
+              <p className="text-base xxs:text-lg xs:text-xl font-bold">FCFA{currentUser?.balance_withdrawal?.toLocaleString() || '0'}</p>
             </div>
           </div>
         </AnimatedCard>
@@ -179,7 +192,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
-              <p className="text-xl font-bold text-blue-600">FCFA{user?.total_invested?.toLocaleString() || '0'}</p>
+              <p className="text-xl font-bold text-blue-600">FCFA{currentUser?.total_invested?.toLocaleString() || '0'}</p>
               <p className="text-xs text-gray-600">Total Investi</p>
             </div>
             <div className="text-center">

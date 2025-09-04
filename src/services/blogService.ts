@@ -21,7 +21,7 @@ export class BlogService {
       // Ajouter le bonus de 100 FCFA au solde de retrait
       const { data: user, error: userError } = await supabase
         .from('users')
-        .select('balance_withdrawal, name')
+        .select('balance_withdrawal, total_earned, name')
         .eq('id', userId)
         .single();
 
@@ -34,6 +34,7 @@ export class BlogService {
         .from('users')
         .update({
           balance_withdrawal: (user.balance_withdrawal || 0) + bonusAmount,
+          total_earned: (user.total_earned || 0) + bonusAmount,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId);
