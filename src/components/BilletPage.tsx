@@ -94,7 +94,7 @@ export const BilletPage: React.FC<BilletPageProps> = ({ user, onBack }) => {
         <div className="grid grid-cols-2 gap-4">
           <button 
             onClick={() => setShowPublishPage(true)}
-            className="bg-blue-500 bg-opacity-60 text-white rounded-xl p-4 flex items-center justify-between hover:bg-opacity-80 transition-all duration-300 transform hover:scale-105"
+            className="bg-blue-500 bg-opacity-60 text-white rounded-2xl p-4 flex items-center justify-between hover:bg-opacity-80 transition-all duration-300 transform hover:scale-105"
           >
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
