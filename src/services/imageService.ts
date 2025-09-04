@@ -4,6 +4,11 @@ export class ImageService {
   // Uploader une image vers Supabase Storage
   static async uploadImage(file: File, userId: string): Promise<{ success: boolean; url?: string; error?: string }> {
     try {
+      // Vérifier que userId est fourni et valide
+      if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+        throw new Error('ID utilisateur requis pour l\'upload');
+      }
+
       // Vérifier le type de fichier
       if (!file.type.startsWith('image/')) {
         throw new Error('Le fichier doit être une image');

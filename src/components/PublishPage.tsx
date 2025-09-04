@@ -17,6 +17,12 @@ export const PublishPage: React.FC<PublishPageProps> = ({ onBack, onPublish, use
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
+      // Vérifier que l'utilisateur est connecté
+      if (!user?.id) {
+        setUploadError('Vous devez être connecté pour uploader des images');
+        return;
+      }
+
       setIsUploading(true);
       setUploadError('');
       
