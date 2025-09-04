@@ -183,13 +183,20 @@ export class PaymentService {
       // Créditer le solde utilisateur
       const { error: balanceError } = await supabase
         .from('users')
-        .update({
-          balance_deposit: supabase.sql`balance_deposit + ${submission.amount}`,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', submission.user_id);
+        .rpc('increment_user_balance', {
+          user_id: submission.user_id,
+          amount: submission.amount,
+          balance_type: 'deposit'
+        });
 
       if (balanceError) throw balanceError;
+
+      // Mettre à jour le timestamp
+      const { error: timestampError } = await supabase
+        .from('users')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', submission.user_id);
+
 
       return {
         success: true,
