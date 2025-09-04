@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { AdminApp } from './components/admin/AdminApp';
 import { useAuth } from './hooks/useAuth';
 import { LoginForm } from './components/LoginForm';
 import { RegisterForm } from './components/RegisterForm';
@@ -26,17 +25,10 @@ import { TelegramPage } from './components/TelegramPage';
 import { supabase } from './lib/supabase';
 
 function App() {
-  // Vérifier si on est sur la route admin
-  const isAdminRoute = window.location.pathname.startsWith('/admin');
-  
   // Récupérer le code de parrainage depuis l'URL
   const urlParams = new URLSearchParams(window.location.search);
   const invitationCode = urlParams.get('invitation_code') || '';
   
-  if (isAdminRoute) {
-    return <AdminApp />;
-  }
-
   const { user, isAuthenticated, isLoading, login, register, logout } = useAuth();
   const [isRegistering, setIsRegistering] = useState(false);
   const [showSetupAccount, setShowSetupAccount] = useState(false);
