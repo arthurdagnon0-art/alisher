@@ -1,26 +1,75 @@
 import React, { useState } from 'react';
 import { ArrowLeft, CreditCard, User, Hash, DollarSign, Lock, ChevronDown } from 'lucide-react';
+import { BankCardService } from '../services/bankCardService';
 
 interface BankCardPageProps {
+  user?: any;
   onBack: () => void;
 }
 
-export const BankCardPage: React.FC<BankCardPageProps> = ({ onBack }) => {
+export const BankCardPage: React.FC<BankCardPageProps> = ({ user, onBack }) => {
   const [selectedWallet, setSelectedWallet] = useState('');
   const [cardHolderName, setCardHolderName] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [usdtAddress, setUsdtAddress] = useState('');
   const [transactionPassword, setTransactionPassword] = useState('');
   const [showWalletDropdown, setShowWalletDropdown] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const walletOptions = [
     'Orange Money',
     'MTN Mobile Money',
     'Moov Money',
     'Wave',
-    'Free Money'
+    'Celtis'
   ];
 
+  const handleSaveBankCard = async () => {
+    if (!selectedWallet || !cardHolderName || !cardNumber) {
+      setError('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    if (!user?.id) {
+      setError('Erreur utilisateur. Veuillez vous reconnecter.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const result = await BankCardService.createBankCard(
+        user.id,
+        selectedWallet.toLowerCase().replace(/\s+/g, '_'),
+        cardHolderName,
+        cardNumber
+      );
+
+      if (result.success) {
+        setSuccess('Carte bancaire ajoutée avec succès !');
+        // Réinitialiser le formulaire
+        setSelectedWallet('');
+        setCardHolderName('');
+        setCardNumber('');
+        setTransactionPassword('');
+        
+        // Retourner à la page précédente après 2 secondes
+        setTimeout(() => {
+          onBack();
+        }, 2000);
+      } else {
+        setError(result.error || 'Erreur lors de l\'ajout de la carte');
+      }
+    } catch (error: any) {
+      setError(error.message || 'Erreur lors de l\'ajout de la carte');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-gray-50 animate-slideInRight">
       {/* Header */}
@@ -37,6 +86,18 @@ export const BankCardPage: React.FC<BankCardPageProps> = ({ onBack }) => {
       </div>
 
       <div className="p-4 space-y-6">
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-600 text-sm">{error}</p>
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <p className="text-green-600 text-sm">{success}</p>
+          </div>
+        )}
+
         {/* Wallet Selection */}
         <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 animate-fadeInUp">
           <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
@@ -128,14 +189,28 @@ export const BankCardPage: React.FC<BankCardPageProps> = ({ onBack }) => {
             type="password"
             value={transactionPassword}
             onChange={(e) => setTransactionPassword(e.target.value)}
-            className="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
-            readOnly
+            placeholder="Entrez votre mot de passe de transaction"
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:bg-gray-100"
           />
+          <p className="text-xs text-gray-500 mt-2">
+            Ce mot de passe sera requis pour valider vos retraits
+          </p>
         </div>
 
         {/* Add Mobile Wallet Button */}
-        <button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl animate-fadeInUp delay-500">
-          Ajouter un portefeuille mobile
+        <button 
+          onClick={handleSaveBankCard}
+          disabled={isLoading}
+          className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl animate-fadeInUp delay-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+        >
+          {isLoading ? (
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Enregistrement...</span>
+            </div>
+          ) : (
+            'Ajouter un portefeuille mobile'
+          )}
         </button>
 
         {/* Explanation */}

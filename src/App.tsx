@@ -167,7 +167,7 @@ function App() {
       case 'withdraw':
         return <WithdrawPage user={user} onBack={() => handleNavigation('dashboard')} />;
       case 'bankcard':
-        return <BankCardPage onBack={() => handleNavigation('account')} />;
+        return <BankCardPage user={user} onBack={() => handleNavigation('account')} />;
       case 'team':
         return <TeamPage user={user} onBack={() => handleNavigation('account')} />;
       case 'products':
