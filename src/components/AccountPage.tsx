@@ -2,6 +2,7 @@ import React from 'react';
 import { AnimatedCard } from './AnimatedCard';
 import { GradientButton } from './GradientButton';
 import { Settings, RotateCcw, CreditCard, CircleDollarSign, ListOrdered, Users, TrendingUp, Gem, BadgeAlert, Send, ChevronRight } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface AccountPageProps {
   user: any;
@@ -11,25 +12,84 @@ interface AccountPageProps {
 }
 
 export const AccountPage: React.FC<AccountPageProps> = ({ user, onLogout, onNavigate, onBack }) => {
+  const [currentUser, setCurrentUser] = React.useState(user);
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+
+  // Mettre à jour les données utilisateur depuis localStorage
+  React.useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        setCurrentUser(userData);
+      } catch (error) {
+        console.error('Erreur parsing user data:', error);
+      }
+    }
+  }, []);
+
+  // Fonction pour rafraîchir les données utilisateur
+  const refreshUserData = async () => {
+    if (!currentUser?.id) return;
+    
+    setIsRefreshing(true);
+    try {
+      const { data: updatedUser, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', currentUser.id)
+        .single();
+
+      if (!error && updatedUser) {
+        const formattedUser = {
+          id: updatedUser.id,
+          phone: updatedUser.phone,
+          email: updatedUser.email,
+          name: updatedUser.name,
+          country: updatedUser.country,
+          balance_deposit: updatedUser.balance_deposit || 0,
+          balance_withdrawal: updatedUser.balance_withdrawal || 0,
+          total_invested: updatedUser.total_invested || 0,
+          referral_code: updatedUser.referral_code,
+          referred_by: updatedUser.referred_by,
+          is_active: updatedUser.is_active,
+          is_blocked: updatedUser.is_blocked,
+          created_at: updatedUser.created_at,
+        };
+        
+        setCurrentUser(formattedUser);
+        localStorage.setItem('user', JSON.stringify(formattedUser));
+      }
+    } catch (error) {
+      console.error('Erreur lors du rafraîchissement:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen font-gothic-italic bg-gray-50 pb-24">
       {/* Header */}
       <div className="bg-white p-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-cyan-400 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold">{user?.name?.charAt(0) || 'U'}</span>
+            <span className="text-white font-bold">{currentUser?.name?.charAt(0) || 'U'}</span>
           </div>
           <div>
-            <h2 className="font-semibold text-gray-900">{user?.name || 'Utilisateur'}</h2>
-            <p className="text-sm text-gray-500">{user?.phone ? `${user.phone.substring(0, 3)}****${user.phone.slice(-3)}` : 'Non défini'}</p>
+            <h2 className="font-semibold text-gray-900">{currentUser?.name || 'Utilisateur'}</h2>
+            <p className="text-sm text-gray-500">{currentUser?.phone ? `${currentUser.phone.substring(0, 3)}****${currentUser.phone.slice(-3)}` : 'Non défini'}</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
           <button className="p-2 hover:bg-gray-100 rounded-full">
             <Settings className="w-5 h-5 text-gray-600" />
           </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full">
-            <RotateCcw className="w-5 h-5 text-gray-600" />
+          <button 
+            onClick={refreshUserData}
+            disabled={isRefreshing}
+            className="p-2 hover:bg-gray-100 rounded-full disabled:opacity-50"
+          >
+            <RotateCcw className={`w-5 h-5 text-gray-600 ${isRefreshing ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
@@ -165,26 +225,26 @@ export const AccountPage: React.FC<AccountPageProps> = ({ user, onLogout, onNavi
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="text-center transform hover:scale-105 transition-all duration-300">
               <p className="text-sm text-gray-600 mb-1">Solde de Recharge</p>
-              <p className="text-xl font-bold text-blue-600 animate-pulse">FCFA0.00</p>
+              <p className="text-xl font-bold text-blue-600 animate-pulse">FCFA{currentUser?.balance_deposit?.toLocaleString() || '0'}</p>
             </div>
             <div className="text-center transform hover:scale-105 transition-all duration-300">
               <p className="text-sm text-gray-600 mb-1">Solde de Retrait</p>
-              <p className="text-xl font-bold text-green-600 animate-pulse delay-200">FCFA0.00</p>
+              <p className="text-xl font-bold text-green-600 animate-pulse delay-200">FCFA{currentUser?.balance_withdrawal?.toLocaleString() || '0'}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center transform hover:scale-105 transition-all duration-300">
               <p className="text-sm text-gray-600 mb-1">Revenu Produit</p>
-              <p className="text-lg font-bold text-blue-600 animate-pulse delay-300">FCFA0.00</p>
+              <p className="text-lg font-bold text-blue-600 animate-pulse delay-300">FCFA{currentUser?.total_earned?.toLocaleString() || '0'}</p>
             </div>
             <div className="text-center transform hover:scale-105 transition-all duration-300">
               <p className="text-sm text-gray-600 mb-1">Commission</p>
-              <p className="text-lg font-bold text-purple-600 animate-pulse delay-400">FCFA0.00</p>
+              <p className="text-lg font-bold text-purple-600 animate-pulse delay-400">FCFA0</p>
             </div>
             <div className="text-center transform hover:scale-105 transition-all duration-300">
               <p className="text-sm text-gray-600 mb-1">Nombre de Commandes</p>
-              <p className="text-lg font-bold text-orange-600 animate-pulse delay-500">0</p>
+              <p className="text-lg font-bold text-orange-600 animate-pulse delay-500">{currentUser?.total_invested ? '1+' : '0'}</p>
             </div>
           </div>
         </AnimatedCard>

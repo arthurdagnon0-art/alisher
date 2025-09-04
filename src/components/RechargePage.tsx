@@ -72,6 +72,8 @@ export const RechargePage: React.FC<RechargePageProps> = ({ user, onBack }) => {
   };
 
   const handleSubmissionComplete = () => {
+    // Déclencher un rafraîchissement des données utilisateur
+    window.dispatchEvent(new CustomEvent('refreshUserData'));
     // Retourner au dashboard après soumission
     onBack();
   };

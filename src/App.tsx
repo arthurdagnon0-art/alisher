@@ -23,6 +23,7 @@ import { AboutUsPage } from './components/AboutUsPage';
 import { SettingsPage } from './components/SettingsPage';
 import { BalanceDetailsPage } from './components/BalanceDetailsPage';
 import { TelegramPage } from './components/TelegramPage';
+import { supabase } from './lib/supabase';
 
 function App() {
   // Vérifier si on est sur la route admin
@@ -81,6 +82,51 @@ function App() {
     }
     setShowSetupAccount(false);
   };
+
+  // Fonction pour rafraîchir les données utilisateur globalement
+  const refreshUserData = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const { data: updatedUser, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (!error && updatedUser) {
+        const formattedUser = {
+          id: updatedUser.id,
+          phone: updatedUser.phone,
+          email: updatedUser.email,
+          name: updatedUser.name,
+          country: updatedUser.country,
+          balance_deposit: updatedUser.balance_deposit || 0,
+          balance_withdrawal: updatedUser.balance_withdrawal || 0,
+          total_invested: updatedUser.total_invested || 0,
+          referral_code: updatedUser.referral_code,
+          referred_by: updatedUser.referred_by,
+          is_active: updatedUser.is_active,
+          is_blocked: updatedUser.is_blocked,
+          created_at: updatedUser.created_at,
+        };
+        
+        localStorage.setItem('user', JSON.stringify(formattedUser));
+        // Forcer le rechargement pour mettre à jour tous les composants
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Erreur lors du rafraîchissement global:', error);
+    }
+  };
+
+  // Rafraîchir automatiquement toutes les 60 secondes si authentifié
+  React.useEffect(() => {
+    if (isAuthenticated && user?.id) {
+      const interval = setInterval(refreshUserData, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated, user?.id]);
 
   if (!isAuthenticated) {
     if (showSetupAccount) {

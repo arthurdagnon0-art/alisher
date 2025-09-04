@@ -48,6 +48,20 @@ export const DepositSubmissionPage: React.FC<DepositSubmissionPageProps> = ({
 
       if (result.success) {
         setShowSuccess(true);
+        
+        // Mettre à jour les données utilisateur dans localStorage
+        const savedUser = localStorage.getItem('user');
+        if (savedUser) {
+          try {
+            const userData = JSON.parse(savedUser);
+            // Marquer qu'une transaction est en attente pour déclencher un rafraîchissement
+            userData.pendingTransaction = true;
+            localStorage.setItem('user', JSON.stringify(userData));
+          } catch (error) {
+            console.error('Erreur mise à jour localStorage:', error);
+          }
+        }
+        
         // Rediriger vers le dashboard après 3 secondes
         setTimeout(() => {
           onComplete();

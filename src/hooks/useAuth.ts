@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User } from '../types';
 import { AuthService } from '../services/authService';
+import { supabase } from '../lib/supabase';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -25,6 +26,49 @@ export const useAuth = () => {
     };
 
     checkLocalSession();
+
+    // Écouter les événements de rafraîchissement
+    const handleRefreshUserData = async () => {
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        try {
+          const userData = JSON.parse(savedUser);
+          if (userData.id) {
+            const { data: updatedUser, error } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', userData.id)
+              .single();
+
+            if (!error && updatedUser) {
+              const formattedUser = {
+                id: updatedUser.id,
+                phone: updatedUser.phone,
+                email: updatedUser.email,
+                name: updatedUser.name,
+                country: updatedUser.country,
+                balance_deposit: updatedUser.balance_deposit || 0,
+                balance_withdrawal: updatedUser.balance_withdrawal || 0,
+                total_invested: updatedUser.total_invested || 0,
+                referral_code: updatedUser.referral_code,
+                referred_by: updatedUser.referred_by,
+                is_active: updatedUser.is_active,
+                is_blocked: updatedUser.is_blocked,
+                created_at: updatedUser.created_at,
+              };
+              
+              setUser(formattedUser);
+              localStorage.setItem('user', JSON.stringify(formattedUser));
+            }
+          }
+        } catch (error) {
+          console.error('Erreur lors du rafraîchissement:', error);
+        }
+      }
+    };
+
+    window.addEventListener('refreshUserData', handleRefreshUserData);
+    return () => window.removeEventListener('refreshUserData', handleRefreshUserData);
   }, []);
 
   const login = async (phone: string, password: string): Promise<void> => {

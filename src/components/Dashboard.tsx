@@ -6,6 +6,7 @@ import { FloatingActionButton } from './FloatingActionButton';
 import { LoadingSpinner } from './LoadingSpinner';
 import { TelegramPopup } from './TelegramPopup';
 import { platformSettings } from '../data/investments';
+import { supabase } from '../lib/supabase';
 
 interface DashboardProps {
   user: any;
@@ -16,6 +17,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
   const [showTelegramModal, setShowTelegramModal] = useState(false);
   const [showTelegramPopup, setShowTelegramPopup] = useState(true);
   const [currentUser, setCurrentUser] = useState(user);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Mettre à jour les données utilisateur depuis localStorage
   React.useEffect(() => {
@@ -29,6 +31,51 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
       }
     }
   }, []);
+
+  // Fonction pour rafraîchir les données utilisateur
+  const refreshUserData = async () => {
+    if (!currentUser?.id) return;
+    
+    setIsRefreshing(true);
+    try {
+      const { data: updatedUser, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', currentUser.id)
+        .single();
+
+      if (!error && updatedUser) {
+        const formattedUser = {
+          id: updatedUser.id,
+          phone: updatedUser.phone,
+          email: updatedUser.email,
+          name: updatedUser.name,
+          country: updatedUser.country,
+          balance_deposit: updatedUser.balance_deposit || 0,
+          balance_withdrawal: updatedUser.balance_withdrawal || 0,
+          total_invested: updatedUser.total_invested || 0,
+          referral_code: updatedUser.referral_code,
+          referred_by: updatedUser.referred_by,
+          is_active: updatedUser.is_active,
+          is_blocked: updatedUser.is_blocked,
+          created_at: updatedUser.created_at,
+        };
+        
+        setCurrentUser(formattedUser);
+        localStorage.setItem('user', JSON.stringify(formattedUser));
+      }
+    } catch (error) {
+      console.error('Erreur lors du rafraîchissement:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Rafraîchir automatiquement toutes les 30 secondes
+  React.useEffect(() => {
+    const interval = setInterval(refreshUserData, 30000);
+    return () => clearInterval(interval);
+  }, [currentUser?.id]);
 
   const floatingActions = [ 
     {
@@ -101,8 +148,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           <button className="p-1 xxs:p-2 hover:bg-gray-100 rounded-full">
             <Settings className="w-4 h-4 xxs:w-5 xxs:h-5 text-gray-600" />
           </button>
-          <button className="p-1 xxs:p-2 hover:bg-gray-100 rounded-full">
-            <RotateCcw className="w-4 h-4 xxs:w-5 xxs:h-5 text-gray-600" />
+          <button 
+            onClick={refreshUserData}
+            disabled={isRefreshing}
+            className="p-1 xxs:p-2 hover:bg-gray-100 rounded-full disabled:opacity-50"
+          >
+            <RotateCcw className={`w-4 h-4 xxs:w-5 xxs:h-5 text-gray-600 ${isRefreshing ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
