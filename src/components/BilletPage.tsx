@@ -112,7 +112,7 @@ export const BilletPage: React.FC<BilletPageProps> = ({ user, onBack }) => {
             onClick={() => setShowRewardsModal(true)}>
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                <span className="text-white"><img src="https://i.postimg.cc/fW3fjKKz/publish.png" width={20} /></span>
+                <span className="text-white"><img src="https://i.postimg.cc/hhWj9g0d/rules.png" width={40} /></span>
               </div>
               <div className="text-left">
                 <p className="font-medium">Règles</p>
