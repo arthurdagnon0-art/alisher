@@ -14,6 +14,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
   const [vipPackages, setVipPackages] = useState<any[]>([]);
   const [stakingPlans, setStakingPlans] = useState<any[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [userInvestments, setUserInvestments] = useState<any>({ vip: [], staking: [] });
   const [showInvestModal, setShowInvestModal] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
   const [investAmount, setInvestAmount] = useState('');
@@ -22,6 +23,9 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
 
   useEffect(() => {
     loadInvestmentData();
+    if (user?.id) {
+      loadUserInvestments();
+    }
   }, []);
 
   const loadInvestmentData = async () => {
@@ -45,11 +49,34 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
     }
   };
 
+  const loadUserInvestments = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const result = await InvestmentService.getUserInvestments(user.id);
+      if (result.success) {
+        setUserInvestments(result.data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des investissements utilisateur:', error);
+    }
+  };
+
+  const hasActiveVIP = () => {
+    return userInvestments.vip.some((investment: any) => investment.status === 'active');
+  };
+
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat('fr-FR').format(amount);
   };
 
   const handleInvest = async (packageData: any, type: 'vip' | 'staking') => {
+    // Vérifier si l'utilisateur a un VIP actif avant d'autoriser le staking
+    if (type === 'staking' && !hasActiveVIP()) {
+      setError('You must activate a VIP first.');
+      return;
+    }
+    
     setSelectedPackage({ ...packageData, type });
     setShowInvestModal(true);
   };
@@ -92,6 +119,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
         setShowInvestModal(false);
         setInvestAmount('');
         // Actualiser les données utilisateur
+        loadUserInvestments();
         window.location.reload();
       } else {
         setError(result.error || 'Erreur lors de l\'investissement');
@@ -102,6 +130,16 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
       setIsLoading(false);
     }
   };
+
+  const handleTabChange = (tab: string) => {
+    if (tab === 'staking' && !hasActiveVIP()) {
+      setError('You must activate a VIP first.');
+      return;
+    }
+    setActiveTab(tab);
+    setError(''); // Clear any previous errors
+  };
+
   const filters = [
     { id: 'VIPs', label: 'VIPs', icon: '📊', src: 'https://i.postimg.cc/SKC9pmqt/vip-icon-1.png' },
     { id: 'STAKINGS', label: 'STAKINGS', icon: '📈', src: 'https://i.postimg.cc/sDH7YnwK/invest-active.png' }
@@ -164,7 +202,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
               <div className="bg-white text-sm border-b border-gray-200 px-1 xxs:px-2 xs:px-3 sm:px-4 pt-2 xxs:pt-3 xs:pt-4">
                 <div className="flex">
                   <button
-                    onClick={() => setActiveTab('vip')}
+                    onClick={() => handleTabChange('vip')}
                     className={`flex-1 py-2 xxs:py-3 font-medium text-xs xxs:text-sm xs:text-base rounded-l-lg transition-all duration-300 ${
                       activeTab === 'vip'
                         ? 'bg-blue-600 text-white'
@@ -174,12 +212,13 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                     VIP Packs
                   </button>
                   <button
-                    onClick={() => setActiveTab('staking')}
+                    onClick={() => handleTabChange('staking')}
                     className={`flex-1 py-2 xxs:py-3 font-medium text-xs xxs:text-sm xs:text-base rounded-r-lg transition-all duration-300 ${
                       activeTab === 'staking'
                         ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        : `bg-gray-100 text-gray-600 hover:bg-gray-200 ${!hasActiveVIP() ? 'opacity-50 cursor-not-allowed' : ''}`
                     }`}
+                    disabled={!hasActiveVIP()}
                   >
                     Staking
                   </button>
@@ -188,6 +227,12 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
 
               {/* Content */}
               <div className="p-1 xxs:p-2 xs:p-3 sm:p-4 space-y-2 xxs:space-y-3 xs:space-y-4 pb-24 texte-xs mb-28">
+                {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                    <p className="text-red-600 text-sm font-medium">{error}</p>
+                  </div>
+                )}
+
                 {activeTab === 'vip' && vipPackages.map((vip, index) => (
                   <div key={vip.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 xxs:p-3 xs:p-4 animate-fadeInUp" style={{ animationDelay: `${index * 100}ms` }}>
                     <div className="flex items-start space-x-2 xxs:space-x-3 xs:space-x-4">
