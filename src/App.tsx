@@ -76,8 +76,8 @@ function App() {
       };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       localStorage.removeItem('tempUser');
-      setUser(updatedUser);
-      setIsAuthenticated(true);
+      // Forcer le rechargement de la page pour actualiser l'état d'authentification
+      window.location.reload();
     }
     setShowSetupAccount(false);
   };
