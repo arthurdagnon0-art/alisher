@@ -75,6 +75,7 @@ export const PublishPage: React.FC<PublishPageProps> = ({ onBack, onPublish, use
   const handlePublish = () => {
     if (content.trim()) {
       onPublish(content, selectedImages);
+      onBack(); // Retourner à la page précédente après publication
     }
   };
 

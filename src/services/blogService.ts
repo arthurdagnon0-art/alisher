@@ -4,6 +4,25 @@ export class BlogService {
   // Créer un nouveau post avec bonus automatique
   static async createPost(userId: string, content: string, images: string[] = []) {
     try {
+      // Vérifier si l'utilisateur a déjà publié aujourd'hui
+      const today = new Date().toISOString().split('T')[0];
+      const { data: existingPost, error: checkError } = await supabase
+        .from('blog_posts')
+        .select('id')
+        .eq('user_id', userId)
+        .gte('created_at', `${today}T00:00:00.000Z`)
+        .lt('created_at', `${today}T23:59:59.999Z`)
+        .maybeSingle();
+
+      if (checkError) throw checkError;
+
+      if (existingPost) {
+        return {
+          success: false,
+          error: 'Vous avez déjà publié un post aujourd\'hui. Revenez demain pour publier à nouveau.'
+        };
+      }
+
       // Créer le post
       const { data: post, error: postError } = await supabase
         .from('blog_posts')
