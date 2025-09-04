@@ -13,30 +13,50 @@ export const PublishPage: React.FC<PublishPageProps> = ({ onBack, onPublish, use
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [currentUser, setCurrentUser] = useState(user);
+
+  // Récupérer les données utilisateur depuis localStorage
+  React.useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        setCurrentUser(userData);
+        console.log('👤 Utilisateur récupéré:', userData);
+      } catch (error) {
+        console.error('Erreur parsing user data:', error);
+      }
+    }
+  }, []);
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
       // Vérifier que l'utilisateur est connecté
-      if (!user?.id) {
-        setUploadError('Vous devez être connecté pour uploader des images');
+      if (!currentUser?.id) {
+        setUploadError('Erreur: Données utilisateur non trouvées. Veuillez vous reconnecter.');
+        console.error('❌ User ID manquant:', { user, currentUser });
         return;
       }
 
+      console.log('📤 Début upload pour utilisateur:', currentUser.id);
       setIsUploading(true);
       setUploadError('');
       
       try {
         // Uploader les vraies images vers Supabase Storage
-        const result = await ImageService.uploadMultipleImages(files, user?.id);
+        const result = await ImageService.uploadMultipleImages(files, currentUser.id);
         
         if (result.success && result.urls) {
           setSelectedImages([...selectedImages, ...result.urls]);
+          console.log('✅ Images uploadées:', result.urls);
         } else {
           setUploadError(result.error || 'Erreur lors de l\'upload');
+          console.error('❌ Erreur upload:', result.error);
         }
       } catch (error: any) {
         setUploadError(error.message || 'Erreur lors de l\'upload');
+        console.error('❌ Exception upload:', error);
       } finally {
         setIsUploading(false);
       }
@@ -57,6 +77,13 @@ export const PublishPage: React.FC<PublishPageProps> = ({ onBack, onPublish, use
       onPublish(content, selectedImages);
     }
   };
+
+  // Debug: Afficher les infos utilisateur
+  console.log('🔍 Debug PublishPage:', { 
+    userProp: user, 
+    currentUser, 
+    hasUserId: !!currentUser?.id 
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 mb-28">
