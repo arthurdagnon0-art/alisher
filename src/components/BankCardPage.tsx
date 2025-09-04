@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, CreditCard, User, Hash, DollarSign, Lock, ChevronDown } from 'lucide-react';
 import { BankCardService } from '../services/bankCardService';
+import { AuthService } from '../services/authService';
 
 interface BankCardPageProps {
   user?: any;
@@ -17,6 +18,25 @@ export const BankCardPage: React.FC<BankCardPageProps> = ({ user, onBack }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [userBankCards, setUserBankCards] = useState<any[]>([]);
+
+  // Charger les cartes existantes
+  React.useEffect(() => {
+    loadUserBankCards();
+  }, [user?.id]);
+
+  const loadUserBankCards = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const result = await BankCardService.getUserBankCards(user.id);
+      if (result.success) {
+        setUserBankCards(result.data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des cartes:', error);
+    }
+  };
 
   const walletOptions = [
     'Orange Money',
@@ -27,13 +47,25 @@ export const BankCardPage: React.FC<BankCardPageProps> = ({ user, onBack }) => {
   ];
 
   const handleSaveBankCard = async () => {
-    if (!selectedWallet || !cardHolderName || !cardNumber) {
+    if (!selectedWallet || !cardHolderName || !cardNumber || !transactionPassword) {
       setError('Veuillez remplir tous les champs obligatoires');
       return;
     }
 
     if (!user?.id) {
       setError('Erreur utilisateur. Veuillez vous reconnecter.');
+      return;
+    }
+
+    // Vérifier le mot de passe de transaction
+    const passwordResult = await AuthService.verifyTransactionPassword(user.id, transactionPassword);
+    if (!passwordResult.success) {
+      setError('Erreur lors de la vérification du mot de passe de transaction');
+      return;
+    }
+
+    if (!passwordResult.isValid) {
+      setError('Mot de passe de transaction incorrect');
       return;
     }
 
@@ -56,6 +88,8 @@ export const BankCardPage: React.FC<BankCardPageProps> = ({ user, onBack }) => {
         setCardHolderName('');
         setCardNumber('');
         setTransactionPassword('');
+        // Recharger les cartes
+        await loadUserBankCards();
         
         // Retourner à la page précédente après 2 secondes
         setTimeout(() => {
@@ -70,6 +104,7 @@ export const BankCardPage: React.FC<BankCardPageProps> = ({ user, onBack }) => {
       setIsLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen bg-gray-50 animate-slideInRight">
       {/* Header */}
@@ -95,6 +130,32 @@ export const BankCardPage: React.FC<BankCardPageProps> = ({ user, onBack }) => {
         {success && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <p className="text-green-600 text-sm">{success}</p>
+          </div>
+        )}
+
+        {/* Cartes Existantes */}
+        {userBankCards.length > 0 && (
+          <div className="bg-white rounded-xl p-6 shadow-lg animate-fadeInUp">
+            <h3 className="font-bold text-gray-900 mb-4 flex items-center">
+              <CreditCard className="w-5 h-5 mr-2 text-green-600" />
+              Mes Cartes Bancaires
+            </h3>
+            <div className="space-y-3">
+              {userBankCards.map((card, index) => (
+                <div key={card.id} className="bg-gray-50 rounded-lg p-4 border-l-4 border-green-400">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-gray-900">{card.wallet_type.replace('_', ' ').toUpperCase()}</p>
+                      <p className="text-sm text-gray-600">{card.card_holder_name}</p>
+                      <p className="text-sm text-gray-500 font-mono">{card.card_number}</p>
+                    </div>
+                    <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold">
+                      Actif
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -174,8 +235,8 @@ export const BankCardPage: React.FC<BankCardPageProps> = ({ user, onBack }) => {
             type="text"
             value={usdtAddress}
             onChange={(e) => setUsdtAddress(e.target.value)}
+            placeholder="Adresse USDT TRC-20 (optionnel)"
             className="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-blue-600 font-medium"
-            readOnly
           />
         </div>
 
@@ -190,10 +251,11 @@ export const BankCardPage: React.FC<BankCardPageProps> = ({ user, onBack }) => {
             value={transactionPassword}
             onChange={(e) => setTransactionPassword(e.target.value)}
             placeholder="Entrez votre mot de passe de transaction"
+            required
             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:bg-gray-100"
           />
           <p className="text-xs text-gray-500 mt-2">
-            Ce mot de passe sera requis pour valider vos retraits
+            Entrez votre mot de passe de transaction pour sécuriser l'ajout de cette carte
           </p>
         </div>
 
