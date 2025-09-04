@@ -132,10 +132,6 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
   };
 
   const handleTabChange = (tab: string) => {
-    if (tab === 'staking' && !hasActiveVIP()) {
-      setError('You must activate a VIP first.');
-      return;
-    }
     setActiveTab(tab);
     setError(''); // Clear any previous errors
   };
@@ -216,9 +212,8 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                     className={`flex-1 py-2 xxs:py-3 font-medium text-xs xxs:text-sm xs:text-base rounded-r-lg transition-all duration-300 ${
                       activeTab === 'staking'
                         ? 'bg-blue-600 text-white'
-                        : `bg-gray-100 text-gray-600 hover:bg-gray-200 ${!hasActiveVIP() ? 'opacity-50 cursor-not-allowed' : ''}`
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
-                    disabled={!hasActiveVIP()}
                   >
                     Staking
                   </button>
@@ -287,6 +282,11 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
 
                 {activeTab === 'staking' && stakingPlans.map((plan, index) => (
                   <div key={plan.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 xxs:p-3 xs:p-4 animate-fadeInUp" style={{ animationDelay: `${index * 100}ms` }}>
+                    {!hasActiveVIP() && (
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                        <p className="text-red-600 text-sm font-medium">You must activate a VIP first.</p>
+                      </div>
+                    )}
                     <div className="flex items-start space-x-2 xxs:space-x-3 xs:space-x-4">
                       {/* Logo */}
                       <div className="w-7 h-7 xxs:w-8 xxs:h-8 xs:w-10 xs:h-10 sm:w-12 sm:h-12 bg-cyan-400 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -323,11 +323,16 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                         {/* Bottom Section */}
                         <div className="flex items-center justify-between">
                           <div className="text-blue-600 font-bold text-[10px] xxs:text-xs xs:text-sm sm:text-base">
-                            FCFA {formatAmount(plan.min_amount)}
+                           Commence par FCFA {formatAmount(plan.min_amount)}
                           </div>
                           <button 
                             onClick={() => handleInvest(plan, 'staking')}
-                            className="bg-green-600 text-white px-2 xxs:px-3 xs:px-4 sm:px-6 py-1 xxs:py-1.5 xs:py-2 rounded-full font-bold text-[10px] xxs:text-xs xs:text-sm hover:bg-green-700 transition-all duration-300 transform hover:scale-105 flex items-center"
+                            disabled={!hasActiveVIP()}
+                            className={`px-2 xxs:px-3 xs:px-4 sm:px-6 py-1 xxs:py-1.5 xs:py-2 rounded-full font-bold text-[10px] xxs:text-xs xs:text-sm transition-all duration-300 transform flex items-center ${
+                              hasActiveVIP() 
+                                ? 'bg-green-600 text-white hover:bg-green-700 hover:scale-105' 
+                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            }`}
                           >
                             <Zap className="w-2.5 h-2.5 xxs:w-3 xxs:h-3 xs:w-4 xs:h-4 mr-0.5 xxs:mr-1" />
                             Staker
