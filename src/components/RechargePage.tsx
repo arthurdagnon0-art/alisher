@@ -17,6 +17,7 @@ export const RechargePage: React.FC<RechargePageProps> = ({ user, onBack }) => {
   const [error, setError] = useState('');
   const [currentStep, setCurrentStep] = useState<'select' | 'info' | 'submit'>('select');
   const [selectedMethod, setSelectedMethod] = useState<any>(null);
+  const [showLoadingModal, setShowLoadingModal] = useState(false);
 
   useEffect(() => {
     loadPaymentMethods();
@@ -55,8 +56,15 @@ export const RechargePage: React.FC<RechargePageProps> = ({ user, onBack }) => {
       return;
     }
 
-    setSelectedMethod(method);
-    setCurrentStep('info');
+    // Afficher le modal de chargement
+    setShowLoadingModal(true);
+    
+    // Simuler un délai de chargement puis continuer
+    setTimeout(() => {
+      setShowLoadingModal(false);
+      setSelectedMethod(method);
+      setCurrentStep('info');
+    }, 2000); // 2 secondes de chargement
   };
 
   const handleProceedToSubmission = () => {
@@ -256,6 +264,36 @@ export const RechargePage: React.FC<RechargePageProps> = ({ user, onBack }) => {
           Continuer
         </button>
       </div>
+
+      {/* Loading Modal */}
+      {showLoadingModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-white rounded-2xl p-8 mx-4 max-w-sm w-full text-center animate-slideUp">
+            {/* Loading Animation */}
+            <div className="relative mb-6">
+              <div className="w-16 h-16 mx-auto">
+                {/* Outer spinning ring */}
+                <div className="absolute inset-0 border-4 border-blue-200 rounded-full"></div>
+                <div className="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+                
+                {/* Inner dots */}
+                <div className="absolute inset-4 flex items-center justify-center">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce delay-100"></div>
+                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce delay-200"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Redirection en cours</h3>
+            <p className="text-gray-600 text-sm">
+              Préparation de votre demande de dépôt...
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
