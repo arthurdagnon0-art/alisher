@@ -64,7 +64,7 @@ export const RechargePage: React.FC<RechargePageProps> = ({ user, onBack }) => {
       setShowLoadingModal(false);
       setSelectedMethod(method);
       setCurrentStep('info');
-    }, 2000); // 2 secondes de chargement
+    }, 10000); // 2 secondes de chargement
   };
 
   const handleProceedToSubmission = () => {
