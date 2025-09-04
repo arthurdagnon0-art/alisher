@@ -18,6 +18,17 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Vérifier si l'utilisateur a un mot de passe de transaction
+  const hasTransactionPassword = user?.transaction_password_hash || false;
+
+  // Si pas de mot de passe de transaction, rediriger vers la configuration
+  React.useEffect(() => {
+    if (!hasTransactionPassword) {
+      alert('Vous devez d\'abord configurer votre mot de passe de transaction');
+      onBack();
+    }
+  }, [hasTransactionPassword, onBack]);
+
   const handleWithdraw = () => {
     if (!amount || !password || !beneficiaryName) {
       setError('Veuillez remplir tous les champs');

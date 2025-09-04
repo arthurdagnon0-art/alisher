@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowLeft, Copy, Users, TrendingUp, Award } from 'lucide-react';
 import { referralRates } from '../data/investments';
 import { User } from '../types';
+import { ReferralService } from '../services/referralService';
 
 interface TeamPageProps {
   user: User;
@@ -9,8 +10,36 @@ interface TeamPageProps {
 }
 
 export const TeamPage: React.FC<TeamPageProps> = ({ user, onBack }) => {
+  const [teamStats, setTeamStats] = React.useState<any>({
+    level1: { count: 0, active: 0, total_invested: 0 },
+    level2: { count: 0, active: 0, total_invested: 0 },
+    level3: { count: 0, active: 0, total_invested: 0 },
+    total_commission: 0
+  });
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    loadTeamStats();
+  }, [user?.id]);
+
+  const loadTeamStats = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const result = await ReferralService.getTeamStats(user.id);
+      if (result.success) {
+        setTeamStats(result.data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des stats équipe:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleCopyInviteLink = () => {
     navigator.clipboard.writeText(`https://clone-de-l-applicati-e9f9.bolt.host/?invitation_code=${user?.referral_code || 'XXXXXX'}`);
+    alert('Lien d\'invitation copié !');
   };
 
   return (
@@ -35,7 +64,9 @@ export const TeamPage: React.FC<TeamPageProps> = ({ user, onBack }) => {
             <TrendingUp className="w-4 h-4 mr-2" />
             Commission
           </p>
-          <p className="text-3xl font-bold">FCFA0</p>
+          <p className="text-3xl font-bold">
+            FCFA{isLoading ? '...' : teamStats.total_commission.toLocaleString()}
+          </p>
         </div>
       </div>
 
@@ -97,11 +128,11 @@ export const TeamPage: React.FC<TeamPageProps> = ({ user, onBack }) => {
                 <p className="text-xs opacity-90">Remise Niveau 1</p>
               </div>
               <div className="transform hover:scale-110 transition-all duration-300">
-                <p className="text-3xl font-bold mb-1">0</p>
+                <p className="text-3xl font-bold mb-1">{isLoading ? '...' : teamStats.level1.count}</p>
                 <p className="text-xs opacity-90">Total invités</p>
               </div>
               <div className="transform hover:scale-110 transition-all duration-300">
-                <p className="text-3xl font-bold mb-1">0</p>
+                <p className="text-3xl font-bold mb-1">{isLoading ? '...' : teamStats.level1.active}</p>
                 <p className="text-xs opacity-90">Actifs</p>
               </div>
             </div>
@@ -123,11 +154,11 @@ export const TeamPage: React.FC<TeamPageProps> = ({ user, onBack }) => {
                 <p className="text-xs opacity-90">Remise Niveau 2</p>
               </div>
               <div className="transform hover:scale-110 transition-all duration-300">
-                <p className="text-3xl font-bold mb-1">0</p>
+                <p className="text-3xl font-bold mb-1">{isLoading ? '...' : teamStats.level2.count}</p>
                 <p className="text-xs opacity-90">Total invités</p>
               </div>
               <div className="transform hover:scale-110 transition-all duration-300">
-                <p className="text-3xl font-bold mb-1">0</p>
+                <p className="text-3xl font-bold mb-1">{isLoading ? '...' : teamStats.level2.active}</p>
                 <p className="text-xs opacity-90">Actifs</p>
               </div>
             </div>
@@ -149,11 +180,11 @@ export const TeamPage: React.FC<TeamPageProps> = ({ user, onBack }) => {
                 <p className="text-xs opacity-90">Remise Niveau 3</p>
               </div>
               <div className="transform hover:scale-110 transition-all duration-300">
-                <p className="text-3xl font-bold mb-1">0</p>
+                <p className="text-3xl font-bold mb-1">{isLoading ? '...' : teamStats.level3.count}</p>
                 <p className="text-xs opacity-90">Total invités</p>
               </div>
               <div className="transform hover:scale-110 transition-all duration-300">
-                <p className="text-3xl font-bold mb-1">0</p>
+                <p className="text-3xl font-bold mb-1">{isLoading ? '...' : teamStats.level3.active}</p>
                 <p className="text-xs opacity-90">Actifs</p>
               </div>
             </div>

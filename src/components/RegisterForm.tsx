@@ -7,14 +7,15 @@ import {EyeOff, Eye} from 'lucide-react'
 interface RegisterFormProps {
   onRegister: (phone: string, password: string, name: string, inviteCode: string, otp: string, country: string) => void;
   onSwitchToLogin: () => void;
+  initialInviteCode?: string;
 }
 
-export const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onSwitchToLogin }) => {
+export const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onSwitchToLogin, initialInviteCode = '' }) => {
   const [phone, setPhone] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [referralCode, setReferralCode] = useState('');
+  const [referralCode, setReferralCode] = useState(initialInviteCode);
   const [verificationCode, setVerificationCode] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('BJ');
   const [sendingOtp, setSendingOtp] = useState(false);

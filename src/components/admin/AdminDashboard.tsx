@@ -49,16 +49,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
   };
 
   const handleApproveTransaction = async (transactionId: string) => {
-    const result = await TransactionService.approveTransaction(transactionId);
+    const result = await TransactionService.approveTransaction(transactionId, 'Approuvé depuis le dashboard');
     if (result.success) {
+      alert('Transaction approuvée avec succès !');
       loadDashboardData(); // Recharger les données
+    } else {
+      alert('Erreur: ' + result.error);
     }
   };
 
   const handleRejectTransaction = async (transactionId: string) => {
-    const result = await TransactionService.rejectTransaction(transactionId);
+    const result = await TransactionService.rejectTransaction(transactionId, 'Rejeté depuis le dashboard');
     if (result.success) {
+      alert('Transaction rejetée avec succès !');
       loadDashboardData(); // Recharger les données
+    } else {
+      alert('Erreur: ' + result.error);
     }
   };
 

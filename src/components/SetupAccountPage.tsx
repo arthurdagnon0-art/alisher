@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Lock, User, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { AuthService } from '../services/authService';
 
 interface SetupAccountPageProps {
   onComplete: (transactionPassword: string, nickname: string) => void;
@@ -12,6 +13,7 @@ export const SetupAccountPage: React.FC<SetupAccountPageProps> = ({ onComplete }
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
@@ -40,7 +42,36 @@ export const SetupAccountPage: React.FC<SetupAccountPageProps> = ({ onComplete }
 
   const handleSubmit = () => {
     if (validateForm()) {
-      onComplete(transactionPassword, nickname.trim());
+      saveTransactionPassword();
+    }
+  };
+
+  const saveTransactionPassword = async () => {
+    setIsLoading(true);
+    try {
+      // Récupérer l'utilisateur temporaire
+      const tempUser = localStorage.getItem('tempUser');
+      if (!tempUser) {
+        throw new Error('Session expirée');
+      }
+
+      const userData = JSON.parse(tempUser);
+      
+      // Mettre à jour le profil avec le mot de passe de transaction
+      const result = await AuthService.updateProfile(userData.id, {
+        name: nickname.trim(),
+        transactionPassword: transactionPassword
+      });
+
+      if (result.success) {
+        onComplete(transactionPassword, nickname.trim());
+      } else {
+        setErrors({ general: result.error || 'Erreur lors de la sauvegarde' });
+      }
+    } catch (error: any) {
+      setErrors({ general: error.message || 'Erreur lors de la configuration' });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -58,6 +89,12 @@ export const SetupAccountPage: React.FC<SetupAccountPageProps> = ({ onComplete }
 
         {/* Form */}
         <div className="p-6 space-y-6">
+          {errors.general && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-600 text-sm">{errors.general}</p>
+            </div>
+          )}
+
           {/* Transaction Password */}
           <div className="space-y-4">
             <div>
@@ -159,9 +196,17 @@ export const SetupAccountPage: React.FC<SetupAccountPageProps> = ({ onComplete }
           {/* Submit Button */}
           <button
             onClick={handleSubmit}
+            disabled={isLoading}
             className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-lg font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
           >
-            Finaliser mon Compte
+            {isLoading ? (
+              <div className="flex items-center justify-center space-x-2">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Configuration...</span>
+              </div>
+            ) : (
+              'Finaliser mon Compte'
+            )}
           </button>
         </div>
       </div>

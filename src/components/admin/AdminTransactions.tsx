@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, CheckCircle, XCircle, Eye, Filter } from 'lucide-react';
 import { AdminService } from '../../services/adminService';
+import { TransactionService } from '../../services/transactionService';
 
 interface AdminTransactionsProps {
   onBack: () => void;
@@ -34,8 +35,12 @@ export const AdminTransactions: React.FC<AdminTransactionsProps> = ({ onBack }) 
 
   const handleApprove = async (transactionId: string) => {
     try {
-      // Logique d'approbation à implémenter
-      console.log('Approuver transaction:', transactionId);
+      const result = await TransactionService.approveTransaction(transactionId);
+      if (result.success) {
+        alert('Transaction approuvée avec succès !');
+      } else {
+        alert('Erreur: ' + result.error);
+      }
       loadTransactions();
     } catch (error) {
       console.error('Erreur lors de l\'approbation:', error);
@@ -44,8 +49,12 @@ export const AdminTransactions: React.FC<AdminTransactionsProps> = ({ onBack }) 
 
   const handleReject = async (transactionId: string) => {
     try {
-      // Logique de rejet à implémenter
-      console.log('Rejeter transaction:', transactionId);
+      const result = await TransactionService.rejectTransaction(transactionId);
+      if (result.success) {
+        alert('Transaction rejetée avec succès !');
+      } else {
+        alert('Erreur: ' + result.error);
+      }
       loadTransactions();
     } catch (error) {
       console.error('Erreur lors du rejet:', error);

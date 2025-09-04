@@ -332,6 +332,8 @@ export class InvestmentService {
   ) {
     const bonusAmount = (investmentAmount * percentage) / 100;
 
+    console.log(`💸 Création commission: ${bonusAmount} FCFA pour le niveau ${level}`);
+
     // Créer la commission
     await supabase
       .from('referral_bonuses')
@@ -348,7 +350,8 @@ export class InvestmentService {
     await supabase
       .from('users')
       .update({
-        balance_withdrawal: supabase.sql`balance_withdrawal + ${bonusAmount}`,
+        balance_withdrawal: supabase.sql`COALESCE(balance_withdrawal, 0) + ${bonusAmount}`,
+        total_earned: supabase.sql`COALESCE(total_earned, 0) + ${bonusAmount}`,
         updated_at: new Date().toISOString()
       })
       .eq('id', referrerId);

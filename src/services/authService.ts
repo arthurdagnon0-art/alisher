@@ -67,6 +67,7 @@ export class AuthService {
       return {
         success: true,
         user: this.formatUser(newUser),
+        needsTransactionPassword: true,
         message: 'Inscription réussie'
       };
     } catch (error: any) {

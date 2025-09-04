@@ -9,15 +9,30 @@ interface PublishPageProps {
 export const PublishPage: React.FC<PublishPageProps> = ({ onBack, onPublish }) => {
   const [content, setContent] = useState('');
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
-      // Simulate image upload
+      setIsUploading(true);
+      
+      // Simuler l'upload d'images avec différentes images
+      const stockImages = [
+        'https://images.pexels.com/photos/534216/pexels-photo-534216.jpeg?auto=compress&cs=tinysrgb&w=400',
+        'https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&w=400',
+        'https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg?auto=compress&cs=tinysrgb&w=400',
+        'https://images.pexels.com/photos/590016/pexels-photo-590016.jpg?auto=compress&cs=tinysrgb&w=400',
+        'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400'
+      ];
+      
       const newImages = Array.from(files).map((file, index) => 
-        `https://images.pexels.com/photos/534216/pexels-photo-534216.jpeg?auto=compress&cs=tinysrgb&w=400`
+        stockImages[index % stockImages.length]
       );
-      setSelectedImages([...selectedImages, ...newImages]);
+      
+      setTimeout(() => {
+        setSelectedImages([...selectedImages, ...newImages]);
+        setIsUploading(false);
+      }, 1500);
     }
   };
 
@@ -76,13 +91,20 @@ export const PublishPage: React.FC<PublishPageProps> = ({ onBack, onPublish }) =
             
             {selectedImages.length < 9 && (
               <label className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all duration-300">
-                <Image className="w-8 h-8 text-gray-400 mb-2" />
-                <span className="text-xs text-gray-500">Ajouter</span>
+                {isUploading ? (
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                ) : (
+                  <>
+                    <Image className="w-8 h-8 text-gray-400 mb-2" />
+                    <span className="text-xs text-gray-500">Ajouter</span>
+                  </>
+                )}
                 <input
                   type="file"
                   multiple
                   accept="image/*"
                   onChange={handleImageUpload}
+                  disabled={isUploading}
                   className="hidden"
                 />
               </label>

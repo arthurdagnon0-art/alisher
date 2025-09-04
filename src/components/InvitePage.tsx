@@ -1,6 +1,7 @@
 import React from 'react';
 import { Share2, Copy, ArrowLeft, ChevronRight } from 'lucide-react';
 import { referralRates } from '../data/investments';
+import { ReferralService } from '../services/referralService';
 
 interface InvitePageProps {
   user: any;
@@ -8,6 +9,33 @@ interface InvitePageProps {
 }
 
 export const InvitePage: React.FC<InvitePageProps> = ({ user, onBack }) => {
+  const [teamStats, setTeamStats] = React.useState<any>({
+    level1: { count: 0, active: 0 },
+    level2: { count: 0, active: 0 },
+    level3: { count: 0, active: 0 },
+    total_commission: 0
+  });
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    loadTeamStats();
+  }, [user?.id]);
+
+  const loadTeamStats = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const result = await ReferralService.getTeamStats(user.id);
+      if (result.success) {
+        setTeamStats(result.data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des stats équipe:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const inviteLink = `https://clone-de-l-applicati-e9f9.bolt.host/?invitation_code=${user?.referral_code || 'XXXXXX'}`;
 
   const handleCopyCode = () => {
@@ -45,7 +73,9 @@ export const InvitePage: React.FC<InvitePageProps> = ({ user, onBack }) => {
       <div className="bg-blue-600 text-white px-4 pb-6">
         <div className="mb-4">
           <p className="text-sm opacity-90">Commission</p>
-          <p className="text-2xl font-bold">FCFA0</p>
+          <p className="text-2xl font-bold">
+            FCFA{isLoading ? '...' : teamStats.total_commission.toLocaleString()}
+          </p>
         </div>
       </div>
 
@@ -95,11 +125,11 @@ export const InvitePage: React.FC<InvitePageProps> = ({ user, onBack }) => {
                 <p className="text-xs opacity-90">Remise Niveau 1</p>
               </div>
               <div>
-                <p className="text-2xl font-bold">{user?.referral_level1_count || 0}</p>
+                <p className="text-2xl font-bold">{isLoading ? '...' : teamStats.level1.count}</p>
                 <p className="text-xs opacity-90">Total invités</p>
               </div>
               <div>
-                <p className="text-2xl font-bold">{user?.referral_level1_active || 0}</p>
+                <p className="text-2xl font-bold">{isLoading ? '...' : teamStats.level1.active}</p>
                 <p className="text-xs opacity-90">Actifs</p>
               </div>
             </div>
@@ -119,11 +149,11 @@ export const InvitePage: React.FC<InvitePageProps> = ({ user, onBack }) => {
                 <p className="text-xs opacity-90">Remise Niveau 2</p>
               </div>
               <div>
-                <p className="text-2xl font-bold">{user?.referral_level2_count || 0}</p>
+                <p className="text-2xl font-bold">{isLoading ? '...' : teamStats.level2.count}</p>
                 <p className="text-xs opacity-90">Total invités</p>
               </div>
               <div>
-                <p className="text-2xl font-bold">{user?.referral_level2_active || 0}</p>
+                <p className="text-2xl font-bold">{isLoading ? '...' : teamStats.level2.active}</p>
                 <p className="text-xs opacity-90">Actifs</p>
               </div>
             </div>
@@ -142,21 +172,13 @@ export const InvitePage: React.FC<InvitePageProps> = ({ user, onBack }) => {
                 <p className="text-2xl font-bold">{referralRates.level3}%</p>
                 <p className="text-xs opacity-90">Remise Niveau 3</p>
               </div>
-                <p className="text-xs text-gray-500 break-all">{inviteLink}</p>
-                <p className="text-2xl font-bold">{user?.referral_level3_count || 0}</p>
-              <div className="flex space-x-2">
-                <button
-                  onClick={handleCopyCode}
-                  className="bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium hover:bg-blue-700"
-                >
-                  Copier
-                </button>
-                <button
-                  onClick={handleShare}
-                  className="bg-green-600 text-white px-3 py-1 rounded text-xs font-medium hover:bg-green-700"
-                >
-                <p className="text-2xl font-bold">{user?.referral_level3_active || 0}</p>
-                </button>
+              <div>
+                <p className="text-2xl font-bold">{isLoading ? '...' : teamStats.level3.count}</p>
+                <p className="text-xs opacity-90">Total invités</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{isLoading ? '...' : teamStats.level3.active}</p>
+                <p className="text-xs opacity-90">Actifs</p>
               </div>
             </div>
           </div>

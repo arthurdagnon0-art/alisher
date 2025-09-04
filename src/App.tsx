@@ -28,6 +28,10 @@ function App() {
   // Vérifier si on est sur la route admin
   const isAdminRoute = window.location.pathname.startsWith('/admin');
   
+  // Récupérer le code de parrainage depuis l'URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const invitationCode = urlParams.get('invitation_code') || '';
+  
   if (isAdminRoute) {
     return <AdminApp />;
   }
@@ -49,7 +53,11 @@ function App() {
   const handleRegister = async (phone: string, password: string, name: string, inviteCode: string, otp: string, country: string) => {
     try {
       await register(phone, password, name, inviteCode, otp, country);
-      setShowSetupAccount(true);
+      // Vérifier si l'utilisateur a besoin de configurer son mot de passe de transaction
+      const tempUser = localStorage.getItem('tempUser');
+      if (tempUser) {
+        setShowSetupAccount(true);
+      }
     } catch (error) {
       console.error('Erreur inscription:', error);
       // L'erreur sera gérée par le composant RegisterForm
@@ -57,13 +65,20 @@ function App() {
   };
 
   const handleSetupComplete = (transactionPassword: string, nickname: string) => {
-    // Mettre à jour les informations utilisateur
-    const updatedUser = {
-      ...user,
-      name: nickname,
-      transactionPassword: transactionPassword
-    };
-    localStorage.setItem('user', JSON.stringify(updatedUser));
+    // Récupérer l'utilisateur temporaire et finaliser l'inscription
+    const tempUser = localStorage.getItem('tempUser');
+    if (tempUser) {
+      const userData = JSON.parse(tempUser);
+      const updatedUser = {
+        ...userData,
+        name: nickname,
+        transaction_password_hash: true // Indiquer que le mot de passe est configuré
+      };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      localStorage.removeItem('tempUser');
+      setUser(updatedUser);
+      setIsAuthenticated(true);
+    }
     setShowSetupAccount(false);
   };
 
@@ -78,6 +93,7 @@ function App() {
       <RegisterForm
         onRegister={handleRegister}
         onSwitchToLogin={() => setIsRegistering(false)}
+        initialInviteCode={invitationCode}
       />
     ) : (
       <LoginForm

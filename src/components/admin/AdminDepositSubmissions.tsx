@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, CheckCircle, XCircle, Eye, Clock, User, Hash } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { PaymentService } from '../../services/paymentService';
 
 interface AdminDepositSubmissionsProps {
   onBack: () => void;
@@ -52,46 +53,12 @@ export const AdminDepositSubmissions: React.FC<AdminDepositSubmissionsProps> = (
 
     setIsProcessing(true);
     try {
-      // Approuver la transaction
-      const { error: transactionError } = await supabase
-        .from('transactions')
-        .update({
-          status: 'approved',
-          admin_notes: adminNotes,
-          processed_at: new Date().toISOString()
-        })
-        .eq('id', selectedSubmission.transaction_id);
-
-      if (transactionError) throw transactionError;
-
-      // Mettre à jour la soumission
-      const { error: submissionError } = await supabase
-        .from('deposit_submissions')
-        .update({
-          status: 'approved'
-        })
-        .eq('id', selectedSubmission.id);
-
-      if (submissionError) throw submissionError;
-
-      // Créditer le solde utilisateur
-      const { data: user, error: userError } = await supabase
-        .from('users')
-        .select('balance_deposit')
-        .eq('id', selectedSubmission.user_id)
-        .single();
-
-      if (userError) throw userError;
-
-      const { error: balanceError } = await supabase
-        .from('users')
-        .update({
-          balance_deposit: (user.balance_deposit || 0) + selectedSubmission.amount,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedSubmission.user_id);
-
-      if (balanceError) throw balanceError;
+      // Utiliser PaymentService pour approuver le dépôt
+      const result = await PaymentService.approveDeposit(selectedSubmission.id, adminNotes);
+      
+      if (!result.success) {
+        throw new Error(result.error);
+      }
 
       alert('Dépôt approuvé et solde crédité avec succès !');
       setShowDetailModal(false);
@@ -108,27 +75,12 @@ export const AdminDepositSubmissions: React.FC<AdminDepositSubmissionsProps> = (
 
     setIsProcessing(true);
     try {
-      // Rejeter la transaction
-      const { error: transactionError } = await supabase
-        .from('transactions')
-        .update({
-          status: 'rejected',
-          admin_notes: adminNotes,
-          processed_at: new Date().toISOString()
-        })
-        .eq('id', selectedSubmission.transaction_id);
-
-      if (transactionError) throw transactionError;
-
-      // Mettre à jour la soumission
-      const { error: submissionError } = await supabase
-        .from('deposit_submissions')
-        .update({
-          status: 'rejected'
-        })
-        .eq('id', selectedSubmission.id);
-
-      if (submissionError) throw submissionError;
+      // Utiliser PaymentService pour rejeter le dépôt
+      const result = await PaymentService.rejectDeposit(selectedSubmission.id, adminNotes);
+      
+      if (!result.success) {
+        throw new Error(result.error);
+      }
 
       alert('Dépôt rejeté avec succès !');
       setShowDetailModal(false);

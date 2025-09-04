@@ -84,10 +84,17 @@ export const useAuth = () => {
         throw new Error(result.error);
       }
 
-      // Sauvegarder la session localement
-      localStorage.setItem('user', JSON.stringify(result.user));
-      setUser(result.user);
-      setIsAuthenticated(true);
+      // Si l'utilisateur a besoin de configurer son mot de passe de transaction
+      if (result.needsTransactionPassword) {
+        // Sauvegarder temporairement pour la configuration
+        localStorage.setItem('tempUser', JSON.stringify(result.user));
+        // Ne pas marquer comme authentifié pour forcer la configuration
+      } else {
+        // Sauvegarder la session localement
+        localStorage.setItem('user', JSON.stringify(result.user));
+        setUser(result.user);
+        setIsAuthenticated(true);
+      }
       
     } catch (error: any) {
       console.error('Erreur d\'inscription:', error);

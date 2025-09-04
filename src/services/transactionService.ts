@@ -148,6 +148,89 @@ export class TransactionService {
     }
   }
 
+  // Approuver une transaction (admin)
+  static async approveTransaction(transactionId: string, adminNotes?: string) {
+    try {
+      // Récupérer la transaction
+      const { data: transaction, error: transactionError } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('id', transactionId)
+        .single();
+
+      if (transactionError || !transaction) {
+        throw new Error('Transaction non trouvée');
+      }
+
+      // Approuver la transaction
+      const { error: updateError } = await supabase
+        .from('transactions')
+        .update({
+          status: 'approved',
+          admin_notes: adminNotes,
+          processed_at: new Date().toISOString()
+        })
+        .eq('id', transactionId);
+
+      if (updateError) throw updateError;
+
+      // Si c'est un dépôt, créditer le solde
+      if (transaction.type === 'deposit') {
+        const { data: user, error: userError } = await supabase
+          .from('users')
+          .select('balance_deposit')
+          .eq('id', transaction.user_id)
+          .single();
+
+        if (userError) throw userError;
+
+        await supabase
+          .from('users')
+          .update({
+            balance_deposit: (user.balance_deposit || 0) + transaction.amount,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', transaction.user_id);
+      }
+
+      return {
+        success: true,
+        message: 'Transaction approuvée avec succès'
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Erreur lors de l\'approbation'
+      };
+    }
+  }
+
+  // Rejeter une transaction (admin)
+  static async rejectTransaction(transactionId: string, adminNotes?: string) {
+    try {
+      const { error } = await supabase
+        .from('transactions')
+        .update({
+          status: 'rejected',
+          admin_notes: adminNotes,
+          processed_at: new Date().toISOString()
+        })
+        .eq('id', transactionId);
+
+      if (error) throw error;
+
+      return {
+        success: true,
+        message: 'Transaction rejetée avec succès'
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Erreur lors du rejet'
+      };
+    }
+  }
+
   // Récupérer les statistiques des transactions
   static async getTransactionStats(userId?: string) {
     try {
