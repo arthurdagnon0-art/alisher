@@ -15,18 +15,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({ user, onLogout, onNavi
   const [currentUser, setCurrentUser] = React.useState(user);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
 
-  // Mettre à jour les données utilisateur depuis localStorage
-  React.useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        const userData = JSON.parse(savedUser);
-        setCurrentUser(userData);
-      } catch (error) {
-        console.error('Erreur parsing user data:', error);
-      }
-    }
-  }, []);
+  // Actualisation automatique supprimée - utilisation du bouton de rafraîchissement manuel uniquement
 
   // Fonction pour rafraîchir les données utilisateur
   const refreshUserData = async () => {

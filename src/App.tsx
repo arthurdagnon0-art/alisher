@@ -36,12 +36,6 @@ function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
 
   // Rafraîchir automatiquement toutes les 60 secondes si authentifié
-  React.useEffect(() => {
-    if (isAuthenticated && user?.id) {
-      const interval = setInterval(refreshUserData, 60000);
-      return () => clearInterval(interval);
-    }
-  }, [isAuthenticated, user?.id]);
 
   if (isLoading) {
     return (

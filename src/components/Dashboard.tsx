@@ -72,10 +72,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
   };
 
   // Rafraîchir automatiquement toutes les 30 secondes
-  React.useEffect(() => {
-    const interval = setInterval(refreshUserData, 30000);
-    return () => clearInterval(interval);
-  }, [currentUser?.id]);
+  // Actualisation automatique supprimée pour améliorer les performances
 
   const floatingActions = [ 
     {
