@@ -22,7 +22,7 @@ export class AuthService {
         .from('users')
         .select('id')
         .eq('phone', userData.phone)
-        .single();
+        .maybeSingle();
 
       if (existingUser) {
         throw new Error('Un utilisateur avec ce numéro existe déjà');
