@@ -31,18 +31,18 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({ isOpen, onClose }) =
           </div>
           
           <h3 className="font-bold text-gray-900 text-xl mb-4">
-            Partagez des captures d'écran de retrait pour recevoir des récompenses en espèces
+            Partagez vos messages de rétraits succès pour gagner des récompenses en fiat
           </h3>
           
           <p className="text-gray-600 text-sm mb-6 leading-relaxed">
-            Envoyez une capture d'écran du retrait réussi le plus récent dans la section des commentaires, et une fois approuvé, vous recevrez immédiatement une récompense de 100-100000
+            Envoyez le message reçu par l'Opérateur lors de votre rétrait reçu et gagner entre 100F et 200.000F
           </p>
           
           <button
             onClick={onClose}
             className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-all duration-300 transform hover:scale-105"
           >
-            Je sais
+            Okay!
           </button>
         </div>
       </div>
