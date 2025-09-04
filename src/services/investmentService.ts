@@ -347,14 +347,22 @@ export class InvestmentService {
       });
 
     // Ajouter au solde de retrait du parrain
-    await supabase
+    const { data: referrer, error: getReferrerError } = await supabase
       .from('users')
-      .update({
-        balance_withdrawal: supabase.sql`COALESCE(balance_withdrawal, 0) + ${bonusAmount}`,
-        total_earned: supabase.sql`COALESCE(total_earned, 0) + ${bonusAmount}`,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', referrerId);
+      .select('balance_withdrawal, total_earned')
+      .eq('id', referrerId)
+      .single();
+
+    if (!getReferrerError && referrer) {
+      await supabase
+        .from('users')
+        .update({
+          balance_withdrawal: (referrer.balance_withdrawal || 0) + bonusAmount,
+          total_earned: (referrer.total_earned || 0) + bonusAmount,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', referrerId);
+    }
 
     // Créer la transaction
     await supabase
