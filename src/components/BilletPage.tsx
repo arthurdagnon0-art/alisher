@@ -70,6 +70,7 @@ export const BilletPage: React.FC<BilletPageProps> = ({ user, onBack }) => {
       <PublishPage
         onBack={() => setShowPublishPage(false)}
         onPublish={handlePublish}
+        user={user}
       />
     );
   }

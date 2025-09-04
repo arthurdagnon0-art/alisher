@@ -4,24 +4,34 @@ export class ImageService {
   // Uploader une image vers Supabase Storage
   static async uploadImage(file: File, userId: string): Promise<{ success: boolean; url?: string; error?: string }> {
     try {
+      console.log('📤 ImageService.uploadImage appelé avec:', { 
+        fileName: file.name, 
+        fileSize: file.size, 
+        userId 
+      });
+
       // Vérifier que userId est fourni et valide
       if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+        console.error('❌ User ID invalide:', userId);
         throw new Error('ID utilisateur requis pour l\'upload');
       }
 
       // Vérifier le type de fichier
       if (!file.type.startsWith('image/')) {
+        console.error('❌ Type de fichier invalide:', file.type);
         throw new Error('Le fichier doit être une image');
       }
 
       // Vérifier la taille (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
+        console.error('❌ Fichier trop volumineux:', file.size);
         throw new Error('L\'image ne doit pas dépasser 5MB');
       }
 
       // Générer un nom unique pour le fichier
       const fileExt = file.name.split('.').pop();
       const fileName = `${userId}/${Date.now()}.${fileExt}`;
+      console.log('📁 Nom de fichier généré:', fileName);
 
       // Uploader vers Supabase Storage
       const { data, error } = await supabase.storage
@@ -31,18 +41,26 @@ export class ImageService {
           upsert: false
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erreur Supabase Storage:', error);
+        throw error;
+      }
+
+      console.log('✅ Upload réussi:', data);
 
       // Obtenir l'URL publique
       const { data: { publicUrl } } = supabase.storage
         .from('blog-images')
         .getPublicUrl(fileName);
 
+      console.log('🔗 URL publique générée:', publicUrl);
+
       return {
         success: true,
         url: publicUrl
       };
     } catch (error: any) {
+      console.error('❌ Erreur dans uploadImage:', error);
       return {
         success: false,
         error: error.message || 'Erreur lors de l\'upload de l\'image'
