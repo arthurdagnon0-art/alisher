@@ -73,7 +73,7 @@ export class InvestmentService {
       // Vérifier le solde utilisateur
       const { data: user, error: userError } = await supabase
         .from('users')
-        .select('balance_deposit')
+        .select('balance_deposit, total_invested')
         .eq('id', userId)
         .single();
 
@@ -347,22 +347,14 @@ export class InvestmentService {
       });
 
     // Ajouter au solde de retrait du parrain
-    const { data: referrer, error: getReferrerError } = await supabase
+    await supabase
       .from('users')
-      .select('balance_withdrawal, total_earned')
-      .eq('id', referrerId)
-      .single();
-
-    if (!getReferrerError && referrer) {
-      await supabase
-        .from('users')
-        .update({
-          balance_withdrawal: (referrer.balance_withdrawal || 0) + bonusAmount,
-          total_earned: (referrer.total_earned || 0) + bonusAmount,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', referrerId);
-    }
+      .update({
+        balance_withdrawal: supabase.sql`COALESCE(balance_withdrawal, 0) + ${bonusAmount}`,
+        total_earned: supabase.sql`COALESCE(total_earned, 0) + ${bonusAmount}`,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', referrerId);
 
     // Créer la transaction
     await supabase
