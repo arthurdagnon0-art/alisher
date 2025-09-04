@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { ArrowLeft, Eye, EyeOff, X } from 'lucide-react';
 import { platformSettings } from '../data/investments';
 import { TransactionService } from '../services/transactionService';
+import { BankCardService } from '../services/bankCardService';
+import { AuthService } from '../services/authService';
 
 interface WithdrawPageProps {
   user: any;
@@ -17,21 +19,45 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
   const [beneficiaryName, setBeneficiaryName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [userBankCards, setUserBankCards] = useState<any[]>([]);
+  const [isLoadingCards, setIsLoadingCards] = useState(true);
 
-  // Vérifier si l'utilisateur a un mot de passe de transaction
-  const hasTransactionPassword = user?.transaction_password_hash || false;
-
-  // Si pas de mot de passe de transaction, rediriger vers la configuration
   React.useEffect(() => {
-    if (!hasTransactionPassword) {
-      alert('Vous devez d\'abord configurer votre mot de passe de transaction');
-      onBack();
-    }
-  }, [hasTransactionPassword, onBack]);
+    loadUserBankCards();
+  }, [user?.id]);
 
-  const handleWithdraw = () => {
+  const loadUserBankCards = async () => {
+    if (!user?.id) return;
+    
+    setIsLoadingCards(true);
+    try {
+      const result = await BankCardService.getUserBankCards(user.id);
+      if (result.success) {
+        setUserBankCards(result.data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des cartes:', error);
+    } finally {
+      setIsLoadingCards(false);
+    }
+  };
+
+  const handleWithdraw = async () => {
     if (!amount || !password || !beneficiaryName) {
       setError('Veuillez remplir tous les champs');
+      return;
+    }
+
+    // Vérifier si l'utilisateur a des cartes bancaires
+    if (userBankCards.length === 0) {
+      setShowSystemAlert(true);
+      return;
+    }
+
+    // Vérifier le mot de passe de transaction
+    const passwordResult = await AuthService.verifyTransactionPassword(user.id, password);
+    if (!passwordResult.success || !passwordResult.isValid) {
+      setError('Mot de passe de transaction incorrect');
       return;
     }
 
@@ -74,13 +100,11 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
 
       if (result.success) {
         alert('Demande de retrait créée avec succès ! Elle sera traitée dans les heures ouvrables.');
+        // Déclencher un rafraîchissement des données utilisateur
+        window.dispatchEvent(new CustomEvent('refreshUserData'));
         onBack();
       } else {
-        if (result.error?.includes('portefeuille')) {
-          setShowSystemAlert(true);
-        } else {
-          setError(result.error || 'Erreur lors de la création du retrait');
-        }
+        setError(result.error || 'Erreur lors de la création du retrait');
       }
     } catch (error: any) {
       setError(error.message || 'Erreur lors de la création du retrait');
@@ -91,8 +115,9 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
 
   const handleLinkWallet = () => {
     setShowSystemAlert(false);
-    // Rediriger vers la page de liaison de portefeuille
-    onBack(); // Pour l'instant, retourner en arrière
+    // Rediriger vers la page de carte bancaire
+    window.location.hash = '#bankcard';
+    onBack();
   };
 
   return (
@@ -247,7 +272,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
                 Avertissement du système
               </h3>
               <p className="text-gray-600 text-sm mb-6">
-                Vous n'avez pas encore lié votre numéro de portefeuille mobile, veuillez lier votre numéro de portefeuille mobile d'abord
+                Vous n'avez pas encore ajouté de carte bancaire. Veuillez d'abord ajouter vos informations de carte bancaire pour effectuer des retraits.
               </p>
               
               <div className="flex space-x-3">
@@ -261,7 +286,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
                   onClick={handleLinkWallet}
                   className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium"
                 >
-                  Lier le portefeuille
+                  Ajouter une Carte
                 </button>
               </div>
             </div>
