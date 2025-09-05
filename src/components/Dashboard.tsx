@@ -203,7 +203,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
             </div>
             <div className="text-center">
               <p className="text-xs xxs:text-sm opacity-90 mb-1">Commissions + Bonus</p>
-              <p className="text-base xxs:text-lg xs:text-xl font-bold">FCFA{currentUser?.balance_withdrawal?.toLocaleString() || '0'}</p>
+              <p className="text-base xxs:text-lg xs:text-xl font-bold">FCFA{totalCommission.toLocaleString()}</p>
             </div>
           </div>
         </AnimatedCard>
