@@ -21,12 +21,30 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // État pour l'utilisateur avec données à jour
+  const [currentUser, setCurrentUser] = useState(user);
+
   useEffect(() => {
     loadInvestmentData();
     if (user?.id) {
       loadUserInvestments();
     }
+    // Charger les données utilisateur à jour
+    loadCurrentUser();
   }, []);
+
+  const loadCurrentUser = () => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        setCurrentUser(userData);
+        console.log('👤 Utilisateur chargé dans InvestmentsList:', userData);
+      } catch (error) {
+        console.error('Erreur parsing user data:', error);
+      }
+    }
+  };
 
   const loadInvestmentData = async () => {
     setIsLoadingData(true);
@@ -98,7 +116,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
       return;
     }
 
-    if (amount > user.balance_deposit) {
+    if (amount > (currentUser?.balance_deposit || 0)) {
       setError('Solde insuffisant');
       return;
     }
@@ -109,9 +127,9 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
     try {
       let result;
       if (selectedPackage.type === 'vip') {
-        result = await InvestmentService.createVIPInvestment(user.id, selectedPackage.id, amount);
+        result = await InvestmentService.createVIPInvestment(currentUser.id, selectedPackage.id, amount);
       } else {
-        result = await InvestmentService.createStakingInvestment(user.id, selectedPackage.id, amount);
+        result = await InvestmentService.createStakingInvestment(currentUser.id, selectedPackage.id, amount);
       }
 
       if (result.success) {
@@ -120,7 +138,8 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
         setInvestAmount('');
         // Actualiser les données utilisateur
         loadUserInvestments();
-        window.location.reload();
+        // Recharger les données utilisateur depuis la base
+        await refreshUserData();
       } else {
         setError(result.error || 'Erreur lors de l\'investissement');
       }
@@ -128,6 +147,43 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
       setError(error.message || 'Erreur lors de l\'investissement');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const refreshUserData = async () => {
+    if (!currentUser?.id) return;
+    
+    try {
+      const { data: updatedUser, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', currentUser.id)
+        .single();
+
+      if (!error && updatedUser) {
+        const formattedUser = {
+          id: updatedUser.id,
+          phone: updatedUser.phone,
+          email: updatedUser.email,
+          name: updatedUser.name,
+          country: updatedUser.country,
+          balance_deposit: updatedUser.balance_deposit || 0,
+          balance_withdrawal: updatedUser.balance_withdrawal || 0,
+          total_invested: updatedUser.total_invested || 0,
+          referral_code: updatedUser.referral_code,
+          referred_by: updatedUser.referred_by,
+          is_active: updatedUser.is_active,
+          is_blocked: updatedUser.is_blocked,
+          created_at: updatedUser.created_at,
+        };
+        
+        setCurrentUser(formattedUser);
+        localStorage.setItem('user', JSON.stringify(formattedUser));
+        // Déclencher un événement global pour mettre à jour les autres composants
+        window.dispatchEvent(new CustomEvent('refreshUserData'));
+      }
+    } catch (error) {
+      console.error('Erreur lors du rafraîchissement:', error);
     }
   };
 
@@ -534,11 +590,11 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                   <p className="text-gray-700">
                     <strong>Solde disponible:</strong> 
                     <span className={`ml-2 font-bold ${
-                      (user?.balance_deposit || 0) >= (parseFloat(investAmount) || selectedPackage?.min_amount || 0)
+                     (currentUser?.balance_deposit || 0) >= (parseFloat(investAmount) || selectedPackage?.min_amount || 0)
                         ? 'text-green-600' 
                         : 'text-red-600'
                     }`}>
-                      FCFA{formatAmount(user?.balance_deposit || 0)}
+                     FCFA{formatAmount(currentUser?.balance_deposit || 0)}
                     </span>
                   </p>
                   {(user?.balance_deposit || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0) && (
@@ -560,7 +616,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     <span>Traitement...</span>
                   </div>
-                ) : (
+                 {(currentUser?.balance_deposit || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0) && (
                   selectedPackage?.type === 'vip' ? 'Investir Maintenant' : 'Staker Maintenant'
                 )}
               </button>
