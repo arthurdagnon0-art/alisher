@@ -63,8 +63,9 @@ export class TransactionService {
       // Récupérer l'utilisateur et sa carte bancaire
       const { data: user, error: userError } = await supabase
         .from('users')
-        .select('balance_withdrawal, total_earned')
+        .select(`
           balance_withdrawal,
+          total_earned,
           bank_cards(id, wallet_type, card_holder_name, card_number)
         `)
         .eq('id', userId)
@@ -274,7 +275,7 @@ export class TransactionService {
       if (transaction.type === 'withdrawal') {
         const { data: user, error: userError } = await supabase
           .from('users')
-          .select('balance_withdrawal, total_earned')
+          .select('balance_withdrawal')
           .eq('id', transaction.user_id)
           .single();
 
@@ -286,7 +287,6 @@ export class TransactionService {
           .from('users')
           .update({
             balance_withdrawal: (user.balance_withdrawal || 0) + refundAmount,
-            total_earned: (user.total_earned || 0), // Maintenir total_earned
             updated_at: new Date().toISOString()
           })
           .eq('id', transaction.user_id);
