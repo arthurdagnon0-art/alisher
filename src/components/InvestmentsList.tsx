@@ -597,7 +597,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                      FCFA{formatAmount(currentUser?.balance_deposit || 0)}
                     </span>
                   </p>
-                  {(user?.balance_deposit || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0) && (
+                  {(currentUser?.balance_deposit || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0) && (
                     <p className="text-red-600 text-[10px] xxs:text-xs mt-1">⚠️ Solde insuffisant</p>
                   )}
                 </div>
@@ -608,7 +608,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
             <div className="p-4 xxs:p-5 xs:p-6 border-t border-gray-100 bg-gray-50">
               <button
                 onClick={confirmInvestment}
-                disabled={isLoading || (user?.balance_deposit || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0)}
+                disabled={isLoading || (currentUser?.balance_deposit || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0)}
                 className="w-full bg-blue-600 text-white py-3 xxs:py-4 rounded-xl font-bold text-base xxs:text-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none mb-3"
               >
                 {isLoading ? (
