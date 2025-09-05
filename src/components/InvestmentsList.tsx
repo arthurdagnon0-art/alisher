@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useEffect } from 'react';
 import { Zap, ArrowLeft, Crown } from 'lucide-react';
 import { InvestmentService } from '../services/investmentService';
+import { supabase } from '../lib/supabase';
 
 interface InvestmentsListProps {
   onBack?: () => void;
