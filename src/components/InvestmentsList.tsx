@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useEffect } from 'react';
 import { Zap, ArrowLeft, Crown } from 'lucide-react';
 import { InvestmentService } from '../services/investmentService';
-import { supabase } from '../lib/supabase';
 
 interface InvestmentsListProps {
   onBack?: () => void;
@@ -618,8 +617,9 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                     <span>Traitement...</span>
                   </div>
                 ) : (
-                  (currentUser?.balance_deposit || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0) ? 'Solde insuffisant' :
-                  selectedPackage?.type === 'vip' ? 'Investir Maintenant' : 'Staker Maintenant'
+                  (currentUser?.balance_deposit || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0) ? 
+                    'Solde insuffisant' :
+                    (selectedPackage?.type === 'vip' ? 'Investir Maintenant' : 'Staker Maintenant')
                 )}
               </button>
               
