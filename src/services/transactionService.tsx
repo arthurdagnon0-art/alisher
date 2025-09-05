@@ -60,6 +60,22 @@ export class TransactionService {
   // Créer une demande de retrait avec débit immédiat
   static async createWithdrawal(userId: string, amount: number, method: string, transactionPassword: string, originalAmount?: number, currency?: string) {
     try {
+      // Vérifier si l'utilisateur a déjà fait un retrait aujourd'hui
+      const today = new Date().toISOString().split('T')[0];
+      const { data: todayWithdrawals, error: withdrawalCheckError } = await supabase
+        .from('transactions')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('type', 'withdrawal')
+        .gte('created_at', `${today}T00:00:00.000Z`)
+        .lt('created_at', `${today}T23:59:59.999Z`);
+
+      if (withdrawalCheckError) throw withdrawalCheckError;
+
+      if (todayWithdrawals && todayWithdrawals.length > 0) {
+        throw new Error('Vous avez déjà effectué un retrait aujourd\'hui. Un seul retrait par jour est autorisé.');
+      }
+
       // Récupérer l'utilisateur et sa carte bancaire
       const { data: user, error: userError } = await supabase
         .from('users')

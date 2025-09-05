@@ -4,6 +4,7 @@ import { platformSettings } from '../data/investments';
 import { TransactionService } from '../services/transactionService';
 import { BankCardService } from '../services/bankCardService';
 import { AuthService } from '../services/authService';
+import { supabase } from '../lib/supabase';
 
 interface WithdrawPageProps {
   user: any;
@@ -20,9 +21,12 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
   const [error, setError] = useState('');
   const [userBankCards, setUserBankCards] = useState<any[]>([]);
   const [isLoadingCards, setIsLoadingCards] = useState(true);
+  const [hasTodayWithdrawal, setHasTodayWithdrawal] = useState(false);
+  const [isCheckingWithdrawals, setIsCheckingWithdrawals] = useState(true);
 
   React.useEffect(() => {
     loadUserBankCards();
+    checkTodayWithdrawals();
   }, [user?.id]);
 
   const loadUserBankCards = async () => {
@@ -41,7 +45,37 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
     }
   };
 
+  const checkTodayWithdrawals = async () => {
+    if (!user?.id) return;
+    
+    setIsCheckingWithdrawals(true);
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const { data: todayWithdrawals, error } = await supabase
+        .from('transactions')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('type', 'withdrawal')
+        .gte('created_at', `${today}T00:00:00.000Z`)
+        .lt('created_at', `${today}T23:59:59.999Z`);
+
+      if (!error && todayWithdrawals && todayWithdrawals.length > 0) {
+        setHasTodayWithdrawal(true);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la vérification des retraits:', error);
+    } finally {
+      setIsCheckingWithdrawals(false);
+    }
+  };
+
   const handleWithdraw = async () => {
+    // Vérifier la limite quotidienne côté frontend
+    if (hasTodayWithdrawal) {
+      setError('Vous avez déjà effectué un retrait aujourd\'hui. Un seul retrait par jour est autorisé.');
+      return;
+    }
+
     if (!amount || !password) {
       setError('Veuillez remplir tous les champs');
       return;
@@ -125,6 +159,8 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
         alert(`Demande de retrait créée avec succès ! ${payType === 'USDT' ? `${withdrawAmount} USDT (${finalAmount.toLocaleString()} FCFA)` : `${finalAmount.toLocaleString()} FCFA`} sera traité dans les heures ouvrables.`);
         // Déclencher un rafraîchissement des données utilisateur
         window.dispatchEvent(new CustomEvent('refreshUserData'));
+        // Marquer qu'un retrait a été effectué aujourd'hui
+        setHasTodayWithdrawal(true);
         onBack();
       } else {
         setError(result.error || 'Erreur lors de la création du retrait');
@@ -198,6 +234,21 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <p className="text-red-600 text-sm">{error}</p>
+          </div>
+        )}
+
+        {/* Daily Limit Warning */}
+        {hasTodayWithdrawal && (
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 border-l-4 border-orange-400">
+            <div className="flex items-start space-x-3">
+              <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5" />
+              <div>
+                <h4 className="text-orange-800 font-semibold mb-1">Limite Quotidienne Atteinte</h4>
+                <p className="text-sm text-orange-700">
+                  Vous avez déjà effectué un retrait aujourd'hui. Revenez demain pour effectuer un nouveau retrait.
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
@@ -310,10 +361,10 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
         <div className="bg-white rounded-lg p-4 shadow-sm">
           <h3 className="text-blue-600 font-semibold mb-4">Explications</h3>
           <div className="space-y-3 text-sm text-gray-600">
-            <p>1. <strong>Horaires :</strong> Retraits de {platformSettings.withdrawal_hours.start}h à {platformSettings.withdrawal_hours.end}h (heure du Bénin)</p>
-            <p>2. <strong>Montant FCFA :</strong> Minimum {platformSettings.min_withdrawal.toLocaleString()} FCFA</p>
-            <p>3. <strong>Montant USDT :</strong> Minimum {platformSettings.min_usdt_withdrawal} USDT</p>
-            <p>4. Pour faciliter le règlement financier, vous ne pouvez demander un retrait que 1 fois par jour</p>
+            <p>1. <strong>Limite quotidienne :</strong> Un seul retrait par jour autorisé</p>
+            <p>2. <strong>Horaires :</strong> Retraits de {platformSettings.withdrawal_hours.start}h à {platformSettings.withdrawal_hours.end}h (heure du Bénin)</p>
+            <p>3. <strong>Montant FCFA :</strong> Minimum {platformSettings.min_withdrawal.toLocaleString()} FCFA</p>
+            <p>4. <strong>Montant USDT :</strong> Minimum {platformSettings.min_usdt_withdrawal} USDT</p>
             <p>5. <strong>Frais :</strong> {platformSettings.withdrawal_fee_rate}% du montant retiré</p>
             <p>6. <strong>Conversion :</strong> 1 USDT = {platformSettings.usdt_exchange_rate} FCFA</p>
             <p>7. <strong>Important :</strong> Le montant sera débité immédiatement, remboursé si rejeté</p>
@@ -331,10 +382,13 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
         {/* Withdraw Button */}
         <button
           onClick={handleWithdraw}
-          disabled={isLoading || isLoadingCards}
+          disabled={isLoading || isLoadingCards || isCheckingWithdrawals || hasTodayWithdrawal}
           className="w-full bg-blue-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50"
         >
-          {isLoading ? 'Traitement...' : `Demander un retrait ${payType}`}
+          {isLoading ? 'Traitement...' : 
+           isCheckingWithdrawals ? 'Vérification...' :
+           hasTodayWithdrawal ? 'Retrait déjà effectué aujourd\'hui' :
+           `Demander un retrait ${payType}`}
         </button>
       </div>
 
