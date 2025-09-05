@@ -39,7 +39,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
     if (currentUser?.id) {
       loadUserInvestments();
     }
-  }, [currentUser?.id]);</parameter>
+  }, [currentUser?.id]);
 
   const loadCurrentUser = () => {
     const savedUser = localStorage.getItem('user');
