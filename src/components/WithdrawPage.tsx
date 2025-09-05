@@ -230,6 +230,9 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
             {amount && (
               <div className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
                 <p className="font-medium">Solde retirable: FCFA {(user?.balance_withdrawal || 0).toLocaleString()}</p>
+                <p className="text-xs text-orange-600 mt-1">
+                  Frais de retrait: {platformSettings.withdrawal_fee_rate}% = FCFA {amount ? Math.round((parseFloat(amount) * (payType === 'USDT' ? platformSettings.usdt_exchange_rate : 1) * platformSettings.withdrawal_fee_rate) / 100).toLocaleString() : '0'}
+                </p>
                 <p className="font-medium">Conversion: {getConvertedAmount()}</p>
                 <p className="text-xs text-gray-500 mt-1">
                   Taux: 1 USDT = {platformSettings.usdt_exchange_rate} FCFA

@@ -48,7 +48,6 @@ export const useAuth = () => {
                 .eq('referrer_id', updatedUser.id);
 
               const totalCommission = commissions?.reduce((sum, c) => sum + c.amount, 0) || 0;
-              const availableBalance = (updatedUser.balance_deposit || 0) + totalCommission;
               
               const formattedUser = {
                 id: updatedUser.id,
@@ -57,7 +56,7 @@ export const useAuth = () => {
                 name: updatedUser.name,
                 country: updatedUser.country,
                 balance_deposit: updatedUser.balance_deposit || 0,
-                balance_withdrawal: (updatedUser.balance_withdrawal || 0) + totalCommission, // Commissions + bonus uniquement
+                balance_withdrawal: (updatedUser.balance_withdrawal || 0), // Solde retirable réel
                 total_invested: updatedUser.total_invested || 0,
                 total_earned: updatedUser.total_earned || 0,
                 referral_code: updatedUser.referral_code,

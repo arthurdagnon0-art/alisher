@@ -223,7 +223,7 @@ export class TransactionService {
 
       // Si c'est un dépôt, créditer le solde
       if (transaction.type === 'deposit') {
-        const { data: user, error: userError } = await supabase
+        const { data: currentUser, error: userError } = await supabase
           .from('users')
           .select('balance_deposit')
           .eq('id', transaction.user_id)
@@ -234,10 +234,12 @@ export class TransactionService {
         await supabase
           .from('users')
           .update({
-            balance_deposit: (user.balance_deposit || 0) + transaction.amount,
+            balance_deposit: (currentUser.balance_deposit || 0) + transaction.amount,
             updated_at: new Date().toISOString()
           })
           .eq('id', transaction.user_id);
+
+        console.log(`💰 Dépôt approuvé: ${transaction.amount} FCFA ajouté au solde de dépôt`);
       }
 
       return {
