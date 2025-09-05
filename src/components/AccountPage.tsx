@@ -1,6 +1,7 @@
 import React from 'react';
 import { AnimatedCard } from './AnimatedCard';
 import { GradientButton } from './GradientButton';
+import { VIPStatusCard } from './VIPStatusCard';
 import { Settings, RotateCcw, CreditCard, CircleDollarSign, ListOrdered, Users, TrendingUp, Gem, BadgeAlert, Send, ChevronRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
