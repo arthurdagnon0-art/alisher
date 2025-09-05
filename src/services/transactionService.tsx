@@ -80,9 +80,7 @@ export class TransactionService {
       const { data: user, error: userError } = await supabase
         .from('users')
         .select(`
-          balance_deposit,
           balance_withdrawal,
-          total_earned,
           bank_cards(id, wallet_type, card_holder_name, card_number)
         `)
         .eq('id', userId)
@@ -115,8 +113,6 @@ export class TransactionService {
       const fees = (amount * feeRate) / 100;
       const totalAmount = amount + fees;
 
-      // Calculer le solde disponible = balance_deposit + balance_withdrawal
-      // Le solde retirable = balance_withdrawal uniquement (commissions + bonus + revenus)
       const withdrawableBalance = Number(user.balance_withdrawal) || 0;
       
       console.log('💰 Vérification solde backend:', {
@@ -151,14 +147,11 @@ export class TransactionService {
 
       if (error) throw error;
 
-      // Déduire du solde disponible (d'abord balance_withdrawal, puis balance_deposit si nécessaire)
-      // Déduire uniquement du balance_withdrawal (commissions + bonus)
-      const newBalanceWithdrawal = withdrawableBalance - totalAmount;
-      
+      // Déduire immédiatement du solde de retrait avec SQL pour éviter les problèmes de concurrence
       const { error: updateError } = await supabase
         .from('users')
         .update({
-          balance_withdrawal: newBalanceWithdrawal,
+          balance_withdrawal: supabase.sql`COALESCE(balance_withdrawal, 0) - ${totalAmount}`,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId);
@@ -248,23 +241,17 @@ export class TransactionService {
 
       // Si c'est un dépôt, créditer le solde
       if (transaction.type === 'deposit') {
-        const { data: currentUser, error: userError } = await supabase
-          .from('users')
-          .select('balance_deposit')
-          .eq('id', transaction.user_id)
-          .single();
-
-        if (userError) throw userError;
-
-        await supabase
+        const { error: balanceError } = await supabase
           .from('users')
           .update({
-            balance_deposit: (currentUser.balance_deposit || 0) + transaction.amount,
+            balance_deposit: supabase.sql`COALESCE(balance_deposit, 0) + ${transaction.amount}`,
             updated_at: new Date().toISOString()
           })
           .eq('id', transaction.user_id);
 
-        console.log(`💰 Dépôt approuvé: ${transaction.amount} FCFA ajouté au solde de dépôt`);
+        if (balanceError) throw balanceError;
+
+        console.log(`💰 Dépôt approuvé: ${transaction.amount} FCFA ajouté au solde de dépôt pour l'utilisateur ${transaction.user_id}`);
       }
 
       return {
@@ -307,24 +294,18 @@ export class TransactionService {
 
       // Si c'est un retrait rejeté, rembourser le solde
       if (transaction.type === 'withdrawal') {
-        const { data: user, error: userError } = await supabase
-          .from('users')
-          .select('balance_deposit, balance_withdrawal, total_earned')
-          .eq('id', transaction.user_id)
-          .single();
-
-        if (userError) throw userError;
-
         const refundAmount = transaction.amount + (transaction.fees || 0);
         
-        // Rembourser au balance_withdrawal (commissions + bonus)
-        await supabase
+        // Rembourser au balance_withdrawal avec SQL pour éviter les problèmes de concurrence
+        const { error: refundError } = await supabase
           .from('users')
           .update({
-            balance_withdrawal: (user.balance_withdrawal || 0) + refundAmount,
+            balance_withdrawal: supabase.sql`COALESCE(balance_withdrawal, 0) + ${refundAmount}`,
             updated_at: new Date().toISOString()
           })
           .eq('id', transaction.user_id);
+
+        if (refundError) throw refundError;
 
         console.log(`💰 Retrait rejeté: ${refundAmount} FCFA remboursé à l'utilisateur ${transaction.user_id}`);
       }

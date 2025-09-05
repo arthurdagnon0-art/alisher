@@ -66,6 +66,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
     
     setIsRefreshing(true);
     try {
+      console.log('🔄 Rafraîchissement Dashboard pour utilisateur:', currentUser.id);
+      
       const { data: updatedUser, error } = await supabase
         .from('users')
         .select('*')
@@ -73,9 +75,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
         .single();
 
       if (!error && updatedUser) {
-        // Calculer le solde disponible = balance_deposit + balance_withdrawal (commissions + bonus)
-        const availableBalance = (updatedUser.balance_deposit || 0) + (updatedUser.balance_withdrawal || 0);
-        
         const formattedUser = {
           id: updatedUser.id,
           phone: updatedUser.phone,
@@ -83,17 +82,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           name: updatedUser.name,
           country: updatedUser.country,
           balance_deposit: updatedUser.balance_deposit || 0,
-          balance_withdrawal: updatedUser.balance_withdrawal || 0, // Solde retirable réel
+          balance_withdrawal: updatedUser.balance_withdrawal || 0,
           total_invested: updatedUser.total_invested || 0,
+          total_earned: updatedUser.total_earned || 0,
           referral_code: updatedUser.referral_code,
           referred_by: updatedUser.referred_by,
+          vip_level: updatedUser.vip_level || 0,
           is_active: updatedUser.is_active,
           is_blocked: updatedUser.is_blocked,
           created_at: updatedUser.created_at,
+          updated_at: updatedUser.updated_at
         };
         
-        setCurrentUser(formattedUser);
-        localStorage.setItem('user', JSON.stringify(formattedUser));
+        console.log('✅ Dashboard - Données mises à jour:', {
+          balance_deposit: formattedUser.balance_deposit,
+          balance_withdrawal: formattedUser.balance_withdrawal,
+          total_invested: formattedUser.total_invested
+        });
+        
       }
     } catch (error) {
       console.error('Erreur lors du rafraîchissement:', error);

@@ -34,6 +34,8 @@ export const useAuth = () => {
         try {
           const userData = JSON.parse(savedUser);
           if (userData.id) {
+            console.log('🔄 Rafraîchissement des données utilisateur pour:', userData.id);
+            
             const { data: updatedUser, error } = await supabase
               .from('users')
               .select('*')
@@ -41,14 +43,6 @@ export const useAuth = () => {
               .single();
 
             if (!error && updatedUser) {
-              // Récupérer les commissions pour calculer le solde disponible
-              const { data: commissions } = await supabase
-                .from('referral_bonuses')
-                .select('amount')
-                .eq('referrer_id', updatedUser.id);
-
-              const totalCommission = commissions?.reduce((sum, c) => sum + c.amount, 0) || 0;
-              
               const formattedUser = {
                 id: updatedUser.id,
                 phone: updatedUser.phone,
@@ -56,15 +50,23 @@ export const useAuth = () => {
                 name: updatedUser.name,
                 country: updatedUser.country,
                 balance_deposit: updatedUser.balance_deposit || 0,
-                balance_withdrawal: (updatedUser.balance_withdrawal || 0) + totalCommission, // Solde retirable = DB + commissions
+                balance_withdrawal: updatedUser.balance_withdrawal || 0,
                 total_invested: updatedUser.total_invested || 0,
                 total_earned: updatedUser.total_earned || 0,
                 referral_code: updatedUser.referral_code,
                 referred_by: updatedUser.referred_by,
+                vip_level: updatedUser.vip_level || 0,
                 is_active: updatedUser.is_active,
                 is_blocked: updatedUser.is_blocked,
                 created_at: updatedUser.created_at,
+                updated_at: updatedUser.updated_at
               };
+              
+              console.log('✅ Données utilisateur mises à jour:', {
+                balance_deposit: formattedUser.balance_deposit,
+                balance_withdrawal: formattedUser.balance_withdrawal,
+                total_invested: formattedUser.total_invested
+              });
               
               setUser(formattedUser);
               localStorage.setItem('user', JSON.stringify(formattedUser));

@@ -186,6 +186,16 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
         alert(`Demande de retrait créée avec succès ! ${payType === 'USDT' ? `${withdrawAmount} USDT (${finalAmount.toLocaleString()} FCFA)` : `${finalAmount.toLocaleString()} FCFA`} sera traité dans les heures ouvrables.`);
         // Déclencher un rafraîchissement des données utilisateur
         window.dispatchEvent(new CustomEvent('refreshUserData'));
+        
+        // Mettre à jour immédiatement l'état local pour refléter la déduction
+        const newBalance = getWithdrawableBalance(currentUser) - (finalAmount + ((finalAmount * platformSettings.withdrawal_fee_rate) / 100));
+        const updatedUser = {
+          ...currentUser,
+          balance_withdrawal: newBalance
+        };
+        setCurrentUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        
         // Marquer qu'un retrait a été effectué aujourd'hui
         setHasTodayWithdrawal(true);
         onBack();

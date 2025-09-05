@@ -180,25 +180,18 @@ export class PaymentService {
 
       if (submissionUpdateError) throw submissionUpdateError;
 
-      // Récupérer le solde actuel et le mettre à jour
-      const { data: currentUser, error: getUserError } = await supabase
-        .from('users')
-        .select('balance_deposit')
-        .eq('id', submission.user_id)
-        .single();
-
-      if (getUserError) throw getUserError;
-
-      // Créditer le solde de dépôt de l'utilisateur
+      // Créditer le solde de dépôt de l'utilisateur avec SQL pour éviter les problèmes de concurrence
       const { error: balanceError } = await supabase
         .from('users')
         .update({
-          balance_deposit: (currentUser.balance_deposit || 0) + submission.amount,
+          balance_deposit: supabase.sql`COALESCE(balance_deposit, 0) + ${submission.amount}`,
           updated_at: new Date().toISOString()
         })
         .eq('id', submission.user_id);
 
       if (balanceError) throw balanceError;
+
+      console.log(`💰 Dépôt approuvé: ${submission.amount} FCFA ajouté au solde de dépôt pour l'utilisateur ${submission.user_id}`);
 
 
       // Vérifier si c'est le premier dépôt approuvé de cet utilisateur
@@ -212,7 +205,7 @@ export class PaymentService {
       if (depositCheckError) throw depositCheckError;
 
       // Si c'est le premier dépôt, traiter les commissions de parrainage
-      if (!previousDeposits || previousDeposits.length === 0) {
+      if (!previousDeposits || previousDeposits.length <= 1) { // <= 1 car on vient d'approuver un dépôt
         await this.processFirstDepositReferralCommissions(submission.user_id, submission.amount);
       }
 

@@ -104,6 +104,8 @@ function App() {
     if (!user?.id) return;
     
     try {
+      console.log('🔄 Rafraîchissement global pour utilisateur:', user.id);
+      
       const { data: updatedUser, error } = await supabase
         .from('users')
         .select('*')
@@ -111,14 +113,6 @@ function App() {
         .single();
 
       if (!error && updatedUser) {
-        // Récupérer les commissions pour calculer le solde disponible
-        const { data: commissions } = await supabase
-          .from('referral_bonuses')
-          .select('amount')
-          .eq('referrer_id', updatedUser.id);
-
-        const totalCommission = commissions?.reduce((sum, c) => sum + c.amount, 0) || 0;
-        
         const formattedUser = {
           id: updatedUser.id,
           phone: updatedUser.phone,
@@ -126,7 +120,7 @@ function App() {
           name: updatedUser.name,
           country: updatedUser.country,
           balance_deposit: updatedUser.balance_deposit || 0,
-          balance_withdrawal: totalCommission,
+          balance_withdrawal: updatedUser.balance_withdrawal || 0,
           total_invested: updatedUser.total_invested || 0,
           total_earned: updatedUser.total_earned || 0,
           referral_code: updatedUser.referral_code,
@@ -137,6 +131,12 @@ function App() {
           created_at: updatedUser.created_at,
           updated_at: updatedUser.updated_at
         };
+        
+        console.log('✅ App - Données globales mises à jour:', {
+          balance_deposit: formattedUser.balance_deposit,
+          balance_withdrawal: formattedUser.balance_withdrawal,
+          total_invested: formattedUser.total_invested
+        });
         
         localStorage.setItem('user', JSON.stringify(formattedUser));
         // Forcer le rechargement pour mettre à jour tous les composants

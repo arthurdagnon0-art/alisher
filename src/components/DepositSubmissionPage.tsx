@@ -54,8 +54,8 @@ export const DepositSubmissionPage: React.FC<DepositSubmissionPageProps> = ({
         if (savedUser) {
           try {
             const userData = JSON.parse(savedUser);
-            // Marquer qu'une transaction est en attente pour déclencher un rafraîchissement
-            userData.pendingTransaction = true;
+            // Déclencher un rafraîchissement immédiat des données
+            window.dispatchEvent(new CustomEvent('refreshUserData'));
             localStorage.setItem('user', JSON.stringify(userData));
           } catch (error) {
             console.error('Erreur mise à jour localStorage:', error);
