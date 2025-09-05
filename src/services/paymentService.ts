@@ -201,6 +201,21 @@ export class PaymentService {
       if (balanceError) throw balanceError;
 
 
+      // Vérifier si c'est le premier dépôt approuvé de cet utilisateur
+      const { data: previousDeposits, error: depositCheckError } = await supabase
+        .from('transactions')
+        .select('id')
+        .eq('user_id', submission.user_id)
+        .eq('type', 'deposit')
+        .eq('status', 'approved');
+
+      if (depositCheckError) throw depositCheckError;
+
+      // Si c'est le premier dépôt, traiter les commissions de parrainage
+      if (!previousDeposits || previousDeposits.length === 0) {
+        await this.processFirstDepositReferralCommissions(submission.user_id, submission.amount);
+      }
+
       return {
         success: true,
         message: 'Dépôt approuvé et solde crédité avec succès'

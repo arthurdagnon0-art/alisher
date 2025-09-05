@@ -138,8 +138,6 @@ export class InvestmentService {
           reference: `VIP-${investment.id.substring(0, 8)}`
         });
 
-      // Traiter les commissions de parrainage
-      await this.processReferralCommissions(userId, amount);
 
       return {
         success: true,
@@ -233,8 +231,6 @@ export class InvestmentService {
           reference: `STAKE-${investment.id.substring(0, 8)}`
         });
 
-      // Traiter les commissions de parrainage
-      await this.processReferralCommissions(userId, amount);
 
       return {
         success: true,
