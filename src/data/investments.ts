@@ -3,7 +3,7 @@ import { VIPPackage, StakingPlan } from '../types';
 export const vipPackages: VIPPackage[] = [
   {
     id: '1',
-    name: 'VIP0',
+    name: 'VIP1',
     min_amount: 3000,
     max_amount: 70000,
     daily_rate: 5.0,
@@ -11,7 +11,7 @@ export const vipPackages: VIPPackage[] = [
   },
   {
     id: '2',
-    name: 'VIP1',
+    name: 'VIP2',
     min_amount: 75000,
     max_amount: 200000,
     daily_rate: 7.0,
@@ -19,7 +19,7 @@ export const vipPackages: VIPPackage[] = [
   },
   {
     id: '3',
-    name: 'VIP2',
+    name: 'VIP3',
     min_amount: 205000,
     max_amount: 500000,
     daily_rate: 9.0,
@@ -27,7 +27,7 @@ export const vipPackages: VIPPackage[] = [
   },
   {
     id: '4',
-    name: 'VIP3',
+    name: 'VIP4',
     min_amount: 505000,
     max_amount: 1000000,
     daily_rate: 11.0,
@@ -35,7 +35,7 @@ export const vipPackages: VIPPackage[] = [
   },
   {
     id: '5',
-    name: 'VIP4',
+    name: 'VIP5',
     min_amount: 1005000,
     max_amount: 5000000,
     daily_rate: 13.0,

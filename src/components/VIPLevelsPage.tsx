@@ -7,13 +7,11 @@ interface VIPLevelsPageProps {
 
 export const VIPLevelsPage: React.FC<VIPLevelsPageProps> = ({ onBack }) => {
   const vipLevels = [
-    
-    { level: 'V1', amount: '3000.00',amount_final:'70000.00', bgColor: 'bg-blue-200', textColor: 'text-blue-600', src:'https://i.postimg.cc/mgZdx1ZS/icon-1.png' },
-    { level: 'V2', amount: '75000.00', bgColor: 'bg-blue-200', textColor: 'text-blue-600', src:'https://i.postimg.cc/nLC0r8Dj/icon-2.png' },
-    { level: 'V3', amount: '205000.00', bgColor: 'bg-yellow-200', textColor: 'text-yellow-700', src:'https://i.postimg.cc/RVLPbLmF/icon-3.png' },
-    { level: 'V4', amount: '505000.00', bgColor: 'bg-purple-200', textColor: 'text-purple-600', src:'https://i.postimg.cc/h4xZVq3V/icon-4.png' },
-    { level: 'V5', amount: '1005000.00', bgColor: 'bg-green-200', textColor: 'text-green-600', src:'https://i.postimg.cc/dtYHBSzp/icon-5.png' },
-    
+    { level: 'VIP1', amount: '3000.00', amount_final:'70000.00', bgColor: 'bg-blue-200', textColor: 'text-blue-600', src:'https://i.postimg.cc/mgZdx1ZS/icon-1.png' },
+    { level: 'VIP2', amount: '75000.00', amount_final:'200000.00', bgColor: 'bg-blue-200', textColor: 'text-blue-600', src:'https://i.postimg.cc/nLC0r8Dj/icon-2.png' },
+    { level: 'VIP3', amount: '205000.00', amount_final:'500000.00', bgColor: 'bg-yellow-200', textColor: 'text-yellow-700', src:'https://i.postimg.cc/RVLPbLmF/icon-3.png' },
+    { level: 'VIP4', amount: '505000.00', amount_final:'1000000.00', bgColor: 'bg-purple-200', textColor: 'text-purple-600', src:'https://i.postimg.cc/h4xZVq3V/icon-4.png' },
+    { level: 'VIP5', amount: '1005000.00', amount_final:'5000000.00', bgColor: 'bg-green-200', textColor: 'text-green-600', src:'https://i.postimg.cc/dtYHBSzp/icon-5.png' },
   ];
 
   return (

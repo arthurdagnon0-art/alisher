@@ -17,11 +17,12 @@ interface VIPLevel {
 }
 
 const vipLevels: VIPLevel[] = [
-  { level: 0, name: 'VIP0', minAmount: 3000, maxAmount: 70000, dailyRate: 5.0, icon: 'https://i.postimg.cc/5tf1SFb3/lv0.png' },
-  { level: 1, name: 'VIP1', minAmount: 75000, maxAmount: 200000, dailyRate: 7.0, icon: 'https://i.postimg.cc/90JTN1Vm/lv1.png' },
-  { level: 2, name: 'VIP2', minAmount: 205000, maxAmount: 500000, dailyRate: 9.0, icon: 'https://i.postimg.cc/RhMKRykp/lv2.png' },
-  { level: 3, name: 'VIP3', minAmount: 505000, maxAmount: 1000000, dailyRate: 11.0, icon: 'https://i.postimg.cc/xCVKkct2/lv3.png' },
-  { level: 4, name: 'VIP4', minAmount: 1005000, maxAmount: 5000000, dailyRate: 13.0, icon: 'https://i.postimg.cc/xCVKkct2/lv3.png' }
+  { level: 0, name: 'VIP0', minAmount: 0, maxAmount: 0, dailyRate: 0, icon: 'https://i.postimg.cc/5tf1SFb3/lv0.png' },
+  { level: 1, name: 'VIP1', minAmount: 3000, maxAmount: 70000, dailyRate: 5.0, icon: 'https://i.postimg.cc/90JTN1Vm/lv1.png' },
+  { level: 2, name: 'VIP2', minAmount: 75000, maxAmount: 200000, dailyRate: 7.0, icon: 'https://i.postimg.cc/RhMKRykp/lv2.png' },
+  { level: 3, name: 'VIP3', minAmount: 205000, maxAmount: 500000, dailyRate: 9.0, icon: 'https://i.postimg.cc/xCVKkct2/lv3.png' },
+  { level: 4, name: 'VIP4', minAmount: 505000, maxAmount: 1000000, dailyRate: 11.0, icon: 'https://i.postimg.cc/xCVKkct2/lv3.png' },
+  { level: 5, name: 'VIP5', minAmount: 1005000, maxAmount: 5000000, dailyRate: 13.0, icon: 'https://i.postimg.cc/xCVKkct2/lv3.png' }
 ];
 
 export const VIPStatusCard: React.FC<VIPStatusCardProps> = ({ user, onNavigate }) => {
