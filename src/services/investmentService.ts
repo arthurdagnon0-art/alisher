@@ -116,27 +116,12 @@ export class InvestmentService {
       if (investmentError) throw investmentError;
 
       // Déduire le montant du solde et mettre à jour total_invested
-      // Déduire d'abord du balance_deposit, puis du balance_withdrawal si nécessaire
-      const balanceDeposit = Number(user.balance_deposit) || 0;
-      const balanceWithdrawal = Number(user.balance_deposit) || 0;
-      
-      let newBalanceDeposit = balanceDeposit;
-      let newBalanceWithdrawal = balanceWithdrawal;
-      
-      if (investmentAmount <= balanceDeposit) {
-        // Déduire entièrement du balance_deposit
-        newBalanceDeposit = balanceDeposit - investmentAmount;
-      } else {
-        // Déduire tout le balance_deposit et le reste du balance_withdrawal
-        const remaining = investmentAmount - balanceDeposit;
-        newBalanceDeposit = 0;
-        newBalanceWithdrawal = balanceWithdrawal - remaining;
-      }
+      // Déduire uniquement du balance_withdrawal (commissions + bonus)
+      const newBalanceWithdrawal = (Number(user.balance_withdrawal) || 0) - investmentAmount;
       
       const { error: updateError } = await supabase
         .from('users')
         .update({
-          balance_deposit: newBalanceDeposit,
           balance_withdrawal: newBalanceWithdrawal,
           total_invested: (Number(user.total_invested) || 0) + investmentAmount,
           updated_at: new Date().toISOString()
