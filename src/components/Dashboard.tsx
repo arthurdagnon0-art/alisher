@@ -258,35 +258,35 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
       {/* Telegram Modal */}
       {showTelegramModal && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 sm:p-6 md:p-8"
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowTelegramModal(false);
             }
           }}
         >
-          <div className="bg-white rounded-2xl p-6 sm:p-8 w-full max-w-xs sm:max-w-sm md:max-w-md relative animate-slideUp mx-4 shadow-2xl">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm relative animate-slideUp shadow-2xl">
             <button
               onClick={() => setShowTelegramModal(false)}
-              className="absolute top-4 right-4 sm:top-6 sm:right-6 w-8 h-8 sm:w-10 sm:h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-all duration-300 hover:scale-110"
+              className="absolute top-4 right-4 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-all duration-300 hover:scale-110"
             >
-              <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+              <X className="w-4 h-4 text-gray-600" />
             </button>
             
             <div className="text-center">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 sm:mb-8 shadow-lg animate-bounce">
-                <Send className="w-10 h-10 sm:w-12 sm:h-12 text-white transform rotate-45" />
+              <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-bounce">
+                <Send className="w-10 h-10 text-white transform rotate-45" />
               </div>
-              <h3 className="font-bold text-gray-900 text-xl sm:text-2xl mb-4 sm:mb-6 leading-tight">
+              <h3 className="font-bold text-gray-900 text-xl mb-4 leading-tight">
                 Diffusion d'Informations Officielles
               </h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8 leading-relaxed px-2">
+              <p className="text-sm text-gray-600 mb-6 leading-relaxed">
                 Suivez notre canal officiel Telegram pour obtenir les dernières nouvelles et informations sur les avantages.
               </p>
               
               <button
                 onClick={() => setShowTelegramModal(false)}
-                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-4 sm:py-5 rounded-xl font-semibold text-base sm:text-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-4 rounded-xl font-semibold text-base hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
               >
                 Suivre Maintenant
               </button>
