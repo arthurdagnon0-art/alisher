@@ -41,6 +41,9 @@ export const useAuth = () => {
               .single();
 
             if (!error && updatedUser) {
+              // Calculer le solde disponible = balance_deposit + balance_withdrawal (commissions + bonus)
+              const availableBalance = (updatedUser.balance_deposit || 0) + (updatedUser.balance_withdrawal || 0);
+              
               const formattedUser = {
                 id: updatedUser.id,
                 phone: updatedUser.phone,
@@ -49,7 +52,7 @@ export const useAuth = () => {
                 country: updatedUser.country,
                 balance_deposit: updatedUser.balance_deposit || 0,
                 balance_deposit: updatedUser.balance_deposit || 0,
-                balance_withdrawal: updatedUser.balance_withdrawal || 0,
+                balance_withdrawal: availableBalance, // Solde disponible total
                 total_invested: updatedUser.total_invested || 0,
                 total_earned: updatedUser.total_earned || 0,
                 referral_code: updatedUser.referral_code,

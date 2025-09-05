@@ -190,7 +190,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
         
         <div className="mt-4">
           <p className="text-sm opacity-90">Solde Disponible</p>
-          <p className="text-2xl font-bold">FCFA{user?.balance_withdrawal?.toLocaleString() || '0'}</p>
+          <p className="text-2xl font-bold">FCFA{((user?.balance_deposit || 0) + (user?.balance_withdrawal || 0)).toLocaleString()}</p>
         </div>
       </div>
 
@@ -229,7 +229,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
             />
             {amount && (
               <div className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
-                <p className="font-medium">Solde disponible: FCFA {user?.balance_withdrawal?.toLocaleString() || '0'}</p>
+                <p className="font-medium">Solde disponible: FCFA {((user?.balance_deposit || 0) + (user?.balance_withdrawal || 0)).toLocaleString()}</p>
                 <p className="font-medium">Conversion: {getConvertedAmount()}</p>
                 <p className="text-xs text-gray-500 mt-1">
                   Taux: 1 USDT = {platformSettings.usdt_exchange_rate} FCFA

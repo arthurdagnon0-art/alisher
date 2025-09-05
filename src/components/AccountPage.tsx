@@ -55,6 +55,9 @@ export const AccountPage: React.FC<AccountPageProps> = ({ user, onLogout, onNavi
         .single();
 
       if (!error && updatedUser) {
+        // Calculer le solde disponible = balance_deposit + balance_withdrawal (commissions + bonus)
+        const availableBalance = (updatedUser.balance_deposit || 0) + (updatedUser.balance_withdrawal || 0);
+        
         const formattedUser = {
           id: updatedUser.id,
           phone: updatedUser.phone,
@@ -62,7 +65,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({ user, onLogout, onNavi
           name: updatedUser.name,
           country: updatedUser.country,
           balance_deposit: updatedUser.balance_deposit || 0,
-          balance_withdrawal: updatedUser.balance_withdrawal || 0,
+          balance_withdrawal: (updatedUser.balance_deposit || 0) + (updatedUser.balance_withdrawal || 0), // Solde disponible total
           total_invested: updatedUser.total_invested || 0,
           referral_code: updatedUser.referral_code,
           referred_by: updatedUser.referred_by,
@@ -209,8 +212,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({ user, onLogout, onNavi
               <p className="text-xl font-bold text-blue-600 animate-pulse">FCFA{currentUser?.balance_deposit?.toLocaleString() || '0'}</p>
             </div>
             <div className="text-center transform hover:scale-105 transition-all duration-300">
-              <p className="text-sm text-gray-600 mb-1">Solde Disponible</p>
-              <p className="text-xl font-bold text-green-600 animate-pulse delay-200">FCFA{currentUser?.balance_withdrawal?.toLocaleString() || '0'}</p>
+              <p className="text-sm text-gray-600 mb-1">Commissions + Bonus</p>
+              <p className="text-xl font-bold text-green-600 animate-pulse delay-200">FCFA{(currentUser?.balance_withdrawal || 0) - (currentUser?.balance_deposit || 0) >= 0 ? ((currentUser?.balance_withdrawal || 0) - (currentUser?.balance_deposit || 0)).toLocaleString() : '0'}</p>
             </div>
           </div>
 

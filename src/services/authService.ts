@@ -202,6 +202,9 @@ export class AuthService {
 
   // Formater les données utilisateur
   private static formatUser(userData: any): User {
+    // Calculer le solde disponible = balance_deposit + commissions + bonus
+    const availableBalance = (userData.balance_deposit || 0) + (userData.balance_withdrawal || 0);
+    
     return {
       id: userData.id,
       phone: userData.phone,
@@ -210,7 +213,7 @@ export class AuthService {
       country: userData.country,
       balance_deposit: userData.balance_deposit || 0,
       balance_deposit: userData.balance_deposit || 0,
-      balance_withdrawal: userData.balance_withdrawal || 0,
+      balance_withdrawal: availableBalance, // Solde disponible = dépôt + commissions + bonus
       total_invested: userData.total_invested || 0,
       total_earned: userData.total_earned || 0,
       referral_code: userData.referral_code,

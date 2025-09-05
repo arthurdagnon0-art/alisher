@@ -73,6 +73,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
         .single();
 
       if (!error && updatedUser) {
+        // Calculer le solde disponible = balance_deposit + balance_withdrawal (commissions + bonus)
+        const availableBalance = (updatedUser.balance_deposit || 0) + (updatedUser.balance_withdrawal || 0);
+        
         const formattedUser = {
           id: updatedUser.id,
           phone: updatedUser.phone,
@@ -80,7 +83,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           name: updatedUser.name,
           country: updatedUser.country,
           balance_deposit: updatedUser.balance_deposit || 0,
-          balance_withdrawal: updatedUser.balance_withdrawal || 0,
+          balance_withdrawal: (updatedUser.balance_deposit || 0) + (updatedUser.balance_withdrawal || 0), // Solde disponible total
           total_invested: updatedUser.total_invested || 0,
           referral_code: updatedUser.referral_code,
           referred_by: updatedUser.referred_by,
@@ -189,7 +192,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           <div className="text-center mb-3 xxs:mb-4">
             <p className="text-xs xxs:text-sm opacity-90 mb-1 xxs:mb-2">Solde Disponible</p>
             <p className="text-xl xxs:text-2xl xs:text-3xl font-bold">
-              FCFA{(currentUser?.balance_withdrawal || 0).toLocaleString()}
+              FCFA{((currentUser?.balance_deposit || 0) + (currentUser?.balance_withdrawal || 0)).toLocaleString()}
             </p>
           </div>
           
@@ -199,7 +202,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
               <p className="text-base xxs:text-lg xs:text-xl font-bold">FCFA{currentUser?.balance_deposit?.toLocaleString() || '0'}</p>
             </div>
             <div className="text-center">
-              <p className="text-xs xxs:text-sm opacity-90 mb-1">Solde Disponible</p>
+              <p className="text-xs xxs:text-sm opacity-90 mb-1">Commissions + Bonus</p>
               <p className="text-base xxs:text-lg xs:text-xl font-bold">FCFA{currentUser?.balance_withdrawal?.toLocaleString() || '0'}</p>
             </div>
           </div>

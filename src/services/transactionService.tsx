@@ -64,6 +64,7 @@ export class TransactionService {
       const { data: user, error: userError } = await supabase
         .from('users')
         .select(`
+          balance_deposit,
           balance_withdrawal,
           total_earned,
           bank_cards(id, wallet_type, card_holder_name, card_number)
@@ -98,8 +99,11 @@ export class TransactionService {
       const fees = (amount * feeRate) / 100;
       const totalAmount = amount + fees;
 
-      // Vérifier le solde (en FCFA)
-      if (user.balance_withdrawal < totalAmount) {
+      // Calculer le solde disponible = balance_deposit + balance_withdrawal
+      const availableBalance = (user.balance_deposit || 0) + (user.balance_withdrawal || 0);
+      
+      // Vérifier le solde disponible (en FCFA)
+      if (availableBalance < totalAmount) {
         throw new Error(`Solde insuffisant. Requis: ${totalAmount.toLocaleString()} FCFA (frais inclus)`);
       }
 
@@ -121,11 +125,28 @@ export class TransactionService {
 
       if (error) throw error;
 
-      // Déduire immédiatement du solde (sera restauré si rejeté)
+      // Déduire du solde disponible (d'abord balance_withdrawal, puis balance_deposit si nécessaire)
+      const balanceWithdrawal = user.balance_withdrawal || 0;
+      const balanceDeposit = user.balance_deposit || 0;
+      
+      let newBalanceWithdrawal = balanceWithdrawal;
+      let newBalanceDeposit = balanceDeposit;
+      
+      if (totalAmount <= balanceWithdrawal) {
+        // Déduire entièrement du balance_withdrawal
+        newBalanceWithdrawal = balanceWithdrawal - totalAmount;
+      } else {
+        // Déduire tout le balance_withdrawal et le reste du balance_deposit
+        const remaining = totalAmount - balanceWithdrawal;
+        newBalanceWithdrawal = 0;
+        newBalanceDeposit = balanceDeposit - remaining;
+      }
+      
       const { error: updateError } = await supabase
         .from('users')
         .update({
-          balance_withdrawal: user.balance_withdrawal - totalAmount,
+          balance_withdrawal: newBalanceWithdrawal,
+          balance_deposit: newBalanceDeposit,
           total_earned: (user.total_earned || 0), // Maintenir total_earned
           updated_at: new Date().toISOString()
         })
@@ -275,7 +296,7 @@ export class TransactionService {
       if (transaction.type === 'withdrawal') {
         const { data: user, error: userError } = await supabase
           .from('users')
-          .select('balance_withdrawal, total_earned')
+          .select('balance_deposit, balance_withdrawal, total_earned')
           .eq('id', transaction.user_id)
           .single();
 
@@ -283,6 +304,7 @@ export class TransactionService {
 
         const refundAmount = transaction.amount + (transaction.fees || 0);
         
+        // Rembourser au balance_withdrawal (commissions + bonus)
         await supabase
           .from('users')
           .update({
