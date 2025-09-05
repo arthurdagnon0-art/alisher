@@ -23,6 +23,7 @@ import { SettingsPage } from './components/SettingsPage';
 import { BalanceDetailsPage } from './components/BalanceDetailsPage';
 import { TelegramPage } from './components/TelegramPage';
 import { TeamDetailsPage } from './components/TeamDetailsPage';
+import { USDTPaymentPage } from './components/USDTPaymentPage';
 import { supabase } from './lib/supabase';
 
 function App() {

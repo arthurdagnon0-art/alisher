@@ -3,6 +3,7 @@ import { ArrowLeft, CreditCard, Info } from 'lucide-react';
 import { PaymentService } from '../services/paymentService';
 import { DepositInfoPage } from './DepositInfoPage';
 import { DepositSubmissionPage } from './DepositSubmissionPage';
+import { USDTPaymentPage } from './USDTPaymentPage';
 
 interface RechargePageProps {
   user: any | null;
@@ -18,6 +19,8 @@ export const RechargePage: React.FC<RechargePageProps> = ({ user, onBack }) => {
   const [currentStep, setCurrentStep] = useState<'select' | 'info' | 'submit'>('select');
   const [selectedMethod, setSelectedMethod] = useState<any>(null);
   const [showLoadingModal, setShowLoadingModal] = useState(false);
+  const [showUSDTPayment, setShowUSDTPayment] = useState(false);
+  const [usdtAmount, setUsdtAmount] = useState('');
 
   useEffect(() => {
     loadPaymentMethods();
@@ -63,7 +66,16 @@ export const RechargePage: React.FC<RechargePageProps> = ({ user, onBack }) => {
     setTimeout(() => {
       setShowLoadingModal(false);
       setSelectedMethod(method);
-      setCurrentStep('info');
+      
+      // Si c'est USDT, rediriger vers la page de paiement USDT
+      if (method.name.toLowerCase().includes('usdt')) {
+        // Calculer le montant USDT
+        const usdtAmount = (parseFloat(amount) / 600).toFixed(4);
+        setUsdtAmount(usdtAmount);
+        setShowUSDTPayment(true);
+      } else {
+        setCurrentStep('info');
+      }
     }, 10000); // 2 secondes de chargement
   };
 
@@ -77,6 +89,27 @@ export const RechargePage: React.FC<RechargePageProps> = ({ user, onBack }) => {
     // Retourner au dashboard après soumission
     onBack();
   };
+
+  const handleUSDTComplete = () => {
+    // Déclencher un rafraîchissement des données utilisateur
+    window.dispatchEvent(new CustomEvent('refreshUserData'));
+    // Retourner au dashboard après soumission
+    onBack();
+  };
+
+  // Page de paiement USDT
+  if (showUSDTPayment) {
+    return (
+      <USDTPaymentPage
+        amount={amount}
+        usdtAmount={usdtAmount}
+        paymentMethod={selectedMethod}
+        user={user}
+        onBack={() => setShowUSDTPayment(false)}
+        onComplete={handleUSDTComplete}
+      />
+    );
+  }
 
   // Étape 2: Informations de dépôt
   if (currentStep === 'info') {
