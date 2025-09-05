@@ -145,6 +145,14 @@ export const AdminTransactions: React.FC<AdminTransactionsProps> = ({ onBack }) 
                       <div className="text-sm text-gray-500">
                         {transaction.users?.phone}
                       </div>
+                      {/* Afficher la carte bancaire pour les retraits */}
+                      {transaction.type === 'withdrawal' && transaction.bank_card && (
+                        <div className="text-xs text-blue-600 mt-1 p-2 bg-blue-50 rounded">
+                          <p><strong>Carte:</strong> {transaction.bank_card.wallet_type.replace('_', ' ').toUpperCase()}</p>
+                          <p><strong>Titulaire:</strong> {transaction.bank_card.card_holder_name}</p>
+                          <p><strong>Numéro:</strong> {transaction.bank_card.card_number}</p>
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
