@@ -76,10 +76,10 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
   };
 
   const loadUserInvestments = async () => {
-    if (!user?.id) return;
+    if (!currentUser?.id) return;
     
     try {
-      const result = await InvestmentService.getUserInvestments(user.id);
+      const result = await InvestmentService.getUserInvestments(currentUser.id);
       if (result.success) {
         setUserInvestments(result.data);
         console.log('📊 Investissements chargés:', result.data);
