@@ -119,8 +119,8 @@ export class InvestmentService {
       const { error: updateError } = await supabase
         .from('users')
         .update({
-          balance_deposit: user.balance_deposit - amount,
-          total_invested: supabase.sql`total_invested + ${amount}`,
+          balance_deposit: balanceDeposit - investmentAmount,
+          total_invested: (Number(user.total_invested) || 0) + investmentAmount,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId);
