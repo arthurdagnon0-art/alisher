@@ -168,7 +168,7 @@ function App() {
       case 'team-details':
         return <TeamDetailsPage user={user} onBack={() => handleNavigation('team')} />;
       case 'products':
-        return <ProductsPage onBack={() => handleNavigation('account')} />;
+        return <ProductsPage user={user} onBack={() => handleNavigation('account')} />;
       case 'product-progress':
         return <ProductProgressPage onBack={() => handleNavigation('account')} />;
       case 'vip':
