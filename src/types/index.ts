@@ -7,6 +7,7 @@ export interface User {
   balance_deposit: number;
   balance_withdrawal: number;
   total_invested: number;
+  total_earned: number;
   referral_code: string;
   referred_by?: string;
   is_active: boolean;

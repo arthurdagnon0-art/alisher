@@ -106,7 +106,12 @@ export const TeamPage: React.FC<TeamPageProps> = ({ user, onBack, onNavigate }) 
             <Award className="w-6 h-6 mr-2" />
             Niveau de l'équipe
           </h3>
-          
+          <button
+            onClick={() => onNavigate && onNavigate('team-details')}
+            className="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-30 transition-all duration-300"
+          >
+            Voir Détails
+          </button>
         </div>
 
         <div className="space-y-4">

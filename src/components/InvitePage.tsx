@@ -105,6 +105,14 @@ export const InvitePage: React.FC<InvitePageProps> = ({ user, onBack }) => {
       <div className="px-2 xxs:px-3 xs:px-4 pb-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-gray-900">Niveau de l'équipe</h3>
+          {onNavigate && (
+            <button
+              onClick={() => onNavigate('team-details')}
+              className="bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium hover:bg-blue-700 transition-colors"
+            >
+              Voir Détails
+            </button>
+          )}
         </div>
 
         <div className="space-y-3">

@@ -15,8 +15,32 @@ interface AccountPageProps {
 export const AccountPage: React.FC<AccountPageProps> = ({ user, onLogout, onNavigate, onBack }) => {
   const [currentUser, setCurrentUser] = React.useState(user);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const [totalCommission, setTotalCommission] = React.useState(0);
 
   // Actualisation automatique supprimée - utilisation du bouton de rafraîchissement manuel uniquement
+
+  // Charger les commissions de parrainage
+  React.useEffect(() => {
+    loadCommissionData();
+  }, [currentUser?.id]);
+
+  const loadCommissionData = async () => {
+    if (!currentUser?.id) return;
+    
+    try {
+      const { data: commissions, error } = await supabase
+        .from('referral_bonuses')
+        .select('amount')
+        .eq('referrer_id', currentUser.id);
+
+      if (!error && commissions) {
+        const total = commissions.reduce((sum, c) => sum + c.amount, 0);
+        setTotalCommission(total);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des commissions:', error);
+    }
+  };
 
   // Fonction pour rafraîchir les données utilisateur
   const refreshUserData = async () => {
@@ -49,6 +73,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({ user, onLogout, onNavi
         
         setCurrentUser(formattedUser);
         localStorage.setItem('user', JSON.stringify(formattedUser));
+        // Recharger aussi les commissions
+        await loadCommissionData();
       }
     } catch (error) {
       console.error('Erreur lors du rafraîchissement:', error);
@@ -195,7 +221,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({ user, onLogout, onNavi
             </div>
             <div className="text-center transform hover:scale-105 transition-all duration-300">
               <p className="text-sm text-gray-600 mb-1">Commission</p>
-              <p className="text-lg font-bold text-purple-600 animate-pulse delay-400">FCFA0</p>
+              <p className="text-lg font-bold text-purple-600 animate-pulse delay-400">FCFA{totalCommission?.toLocaleString() || '0'}</p>
             </div>
             <div className="text-center transform hover:scale-105 transition-all duration-300">
               <p className="text-sm text-gray-600 mb-1">Nombre de Commandes</p>

@@ -145,8 +145,11 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
 
   const handleHistoryClick = () => {
     // Rediriger vers les détails du solde
-    window.dispatchEvent(new CustomEvent('navigate', { detail: 'balance-details' }));
     onBack();
+    // Utiliser setTimeout pour s'assurer que la navigation se fait après le retour
+    setTimeout(() => {
+      window.location.hash = '#balance-details';
+    }, 100);
   };
 
   // Calculer l'équivalent en temps réel

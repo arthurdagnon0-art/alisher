@@ -32,6 +32,34 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
     }
   }, []);
 
+  // Charger les commissions de parrainage
+  const [totalCommission, setTotalCommission] = React.useState(0);
+  const [isLoadingCommission, setIsLoadingCommission] = React.useState(true);
+
+  React.useEffect(() => {
+    loadCommissionData();
+  }, [currentUser?.id]);
+
+  const loadCommissionData = async () => {
+    if (!currentUser?.id) return;
+    
+    setIsLoadingCommission(true);
+    try {
+      const { data: commissions, error } = await supabase
+        .from('referral_bonuses')
+        .select('amount')
+        .eq('referrer_id', currentUser.id);
+
+      if (!error && commissions) {
+        const total = commissions.reduce((sum, c) => sum + c.amount, 0);
+        setTotalCommission(total);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des commissions:', error);
+    } finally {
+      setIsLoadingCommission(false);
+    }
+  };
   // Fonction pour rafraîchir les données utilisateur
   const refreshUserData = async () => {
     if (!currentUser?.id) return;
@@ -248,8 +276,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
               <p className="text-xs text-gray-600">VIP Actifs</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold text-purple-600">0</p>
-              <p className="text-xs text-gray-600">Staking Actifs</p>
+              <p className="text-xl font-bold text-orange-600">
+                {isLoadingCommission ? '...' : `FCFA${totalCommission.toLocaleString()}`}
+              </p>
+              <p className="text-xs text-gray-600">Commission</p>
             </div>
           </div>
         </AnimatedCard>

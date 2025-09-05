@@ -39,6 +39,26 @@ function App() {
 
   // Rafraîchir automatiquement toutes les 60 secondes si authentifié
 
+  // Écouter les événements de navigation personnalisés
+  React.useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.substring(1);
+      if (hash && hash !== currentPage) {
+        handleNavigation(hash);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    
+    // Vérifier le hash initial
+    const initialHash = window.location.hash.substring(1);
+    if (initialHash && initialHash !== currentPage) {
+      handleNavigation(initialHash);
+    }
+
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [currentPage]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -100,6 +120,7 @@ function App() {
           balance_deposit: updatedUser.balance_deposit || 0,
           balance_withdrawal: updatedUser.balance_withdrawal || 0,
           total_invested: updatedUser.total_invested || 0,
+          total_earned: updatedUser.total_earned || 0,
           referral_code: updatedUser.referral_code,
           referred_by: updatedUser.referred_by,
           is_active: updatedUser.is_active,
@@ -144,6 +165,8 @@ function App() {
     if (page === 'invite') setActiveTab('invite');
     if (page === 'billet') setActiveTab('billet');
     if (page === 'account') setActiveTab('account');
+    if (page === 'balance-details') setActiveTab('account');
+    if (page === 'team-details') setActiveTab('account');
   };
 
   const renderCurrentPage = () => {
@@ -153,7 +176,7 @@ function App() {
       case 'investments':
         return <InvestmentsList user={user} onBack={() => handleNavigation('dashboard')} />;
       case 'invite':
-        return <InvitePage user={user} onBack={() => handleNavigation('dashboard')} onNavigate={handleNavigation} />;
+        return <InvitePage user={user} onNavigate={handleNavigation} />;
       case 'billet':
         return <BilletPage user={user} onBack={() => handleNavigation('dashboard')} />;
       case 'account':
@@ -168,6 +191,8 @@ function App() {
         return <TeamPage user={user} onBack={() => handleNavigation('account')} onNavigate={handleNavigation} />;
       case 'team-details':
         return <TeamDetailsPage user={user} onBack={() => handleNavigation('team')} />;
+      case 'balance-details':
+        return <BalanceDetailsPage onBack={() => handleNavigation('account')} user={user} />;
       case 'products':
         return <ProductsPage user={user} onBack={() => handleNavigation('account')} />;
       case 'product-progress':
@@ -180,8 +205,6 @@ function App() {
         return <AboutUsPage onBack={() => handleNavigation('account')} />;
       case 'settings':
         return <SettingsPage user={user} onBack={() => handleNavigation('account')} />;
-      case 'balance-details':
-        return <BalanceDetailsPage onBack={() => handleNavigation('account')} user={user} />;
       case 'telegram':
         return <TelegramPage onBack={() => handleNavigation('account')} />;
       default:

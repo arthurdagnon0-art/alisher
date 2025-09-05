@@ -211,6 +211,7 @@ export class AuthService {
       balance_deposit: userData.balance_deposit || 0,
       balance_withdrawal: userData.balance_withdrawal || 0,
       total_invested: userData.total_invested || 0,
+      total_earned: userData.total_earned || 0,
       referral_code: userData.referral_code,
       referred_by: userData.referred_by,
       is_active: userData.is_active,
