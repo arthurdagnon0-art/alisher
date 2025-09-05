@@ -145,6 +145,8 @@ function App() {
     } catch (error) {
       console.error('Erreur lors du rafraîchissement global:', error);
     }
+  };
+
   if (!isAuthenticated) {
     if (showSetupAccount) {
       return (
