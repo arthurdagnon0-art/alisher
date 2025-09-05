@@ -120,6 +120,8 @@ export class TransactionService {
   // Récupérer les transactions d'un utilisateur
   static async getUserTransactions(userId: string, type?: string, limit = 50) {
     try {
+      console.log('🔍 Chargement des transactions pour utilisateur:', userId, 'type:', type);
+      
       let query = supabase
         .from('transactions')
         .select('*')
@@ -135,12 +137,14 @@ export class TransactionService {
 
       if (error) throw error;
 
+      console.log('✅ Transactions chargées:', data?.length || 0);
       return {
         success: true,
         data: data || [],
         message: 'Transactions récupérées avec succès'
       };
     } catch (error: any) {
+      console.error('❌ Erreur chargement transactions:', error);
       return {
         success: false,
         error: error.message || 'Erreur lors de la récupération des transactions'

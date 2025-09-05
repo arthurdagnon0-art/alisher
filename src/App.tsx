@@ -177,7 +177,7 @@ function App() {
       case 'settings':
         return <SettingsPage user={user} onBack={() => handleNavigation('account')} />;
       case 'balance-details':
-        return <BalanceDetailsPage onBack={() => handleNavigation('account')} />;
+        return <BalanceDetailsPage onBack={() => handleNavigation('account')} user={user} />;
       case 'telegram':
         return <TelegramPage onBack={() => handleNavigation('account')} />;
       default:
