@@ -164,6 +164,24 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
         await refreshUserData();
         // Recharger les investissements après mise à jour
         await loadUserInvestments();
+        
+        // Si c'est un investissement VIP, mettre à jour immédiatement l'état local
+        if (selectedPackage.type === 'vip') {
+          // Ajouter l'investissement VIP à l'état local pour débloquer immédiatement le staking
+          setUserInvestments(prev => ({
+            ...prev,
+            vip: [...prev.vip, {
+              id: result.data.id,
+              status: 'active',
+              package_name: selectedPackage.name,
+              amount: amount,
+              daily_earnings: (amount * selectedPackage.daily_rate) / 100,
+              total_earned: 0,
+              created_at: new Date().toISOString()
+            }]
+          }));
+          console.log('✅ VIP ajouté localement - Staking maintenant disponible');
+        }
       } else {
         setError(result.error || 'Erreur lors de l\'investissement');
         console.error('❌ Erreur investissement:', result.error);
