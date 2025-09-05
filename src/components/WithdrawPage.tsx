@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Eye, EyeOff, X } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, X, AlertCircle, CreditCard, DollarSign } from 'lucide-react';
 import { platformSettings } from '../data/investments';
 import { TransactionService } from '../services/transactionService';
 import { BankCardService } from '../services/bankCardService';
@@ -16,7 +16,6 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [payType, setPayType] = useState('FCFA');
   const [showSystemAlert, setShowSystemAlert] = useState(false);
-  const [beneficiaryName, setBeneficiaryName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [userBankCards, setUserBankCards] = useState<any[]>([]);
@@ -43,7 +42,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
   };
 
   const handleWithdraw = async () => {
-    if (!amount || !password || !beneficiaryName) {
+    if (!amount || !password) {
       setError('Veuillez remplir tous les champs');
       return;
     }
@@ -61,14 +60,26 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
       return;
     }
 
-    const withdrawAmount = parseFloat(amount);
-    if (withdrawAmount < platformSettings.min_withdrawal) {
-      setError(`Montant minimum: ${platformSettings.min_withdrawal.toLocaleString()} FCFA`);
-      return;
+    let withdrawAmount = parseFloat(amount);
+    let finalAmount = withdrawAmount;
+    
+    // Conversion USDT vers FCFA si nécessaire
+    if (payType === 'USDT') {
+      if (withdrawAmount < platformSettings.min_usdt_withdrawal) {
+        setError(`Montant minimum USDT: ${platformSettings.min_usdt_withdrawal} USDT`);
+        return;
+      }
+      // Convertir USDT en FCFA pour la vérification du solde
+      finalAmount = withdrawAmount * platformSettings.usdt_exchange_rate;
+    } else {
+      if (withdrawAmount < platformSettings.min_withdrawal) {
+        setError(`Montant minimum: ${platformSettings.min_withdrawal.toLocaleString()} FCFA`);
+        return;
+      }
     }
 
-    const fees = (withdrawAmount * platformSettings.withdrawal_fee_rate) / 100;
-    const totalAmount = withdrawAmount + fees;
+    const fees = (finalAmount * platformSettings.withdrawal_fee_rate) / 100;
+    const totalAmount = finalAmount + fees;
 
     if (totalAmount > user.balance_withdrawal) {
       setError('Solde insuffisant (frais inclus)');
@@ -91,15 +102,24 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
     setError('');
 
     try {
+      let withdrawAmount = parseFloat(amount);
+      let finalAmount = withdrawAmount;
+      
+      // Conversion USDT vers FCFA
+      if (payType === 'USDT') {
+        finalAmount = withdrawAmount * platformSettings.usdt_exchange_rate;
+      }
+
       const result = await TransactionService.createWithdrawal(
         user.id,
-        parseFloat(amount),
+        finalAmount, // Montant en FCFA pour la base de données
         payType.toLowerCase(),
-        password
+        password,
+        payType === 'USDT' ? withdrawAmount : undefined // Montant original USDT si applicable
       );
 
       if (result.success) {
-        alert('Demande de retrait créée avec succès ! Elle sera traitée dans les heures ouvrables.');
+        alert(`Demande de retrait créée avec succès ! ${payType === 'USDT' ? `${withdrawAmount} USDT (${finalAmount.toLocaleString()} FCFA)` : `${finalAmount.toLocaleString()} FCFA`} sera traité dans les heures ouvrables.`);
         // Déclencher un rafraîchissement des données utilisateur
         window.dispatchEvent(new CustomEvent('refreshUserData'));
         onBack();
@@ -120,6 +140,37 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
     onBack();
   };
 
+  const handleHistoryClick = () => {
+    // Rediriger vers les détails du solde
+    window.location.hash = '#balance-details';
+    onBack();
+  };
+
+  // Calculer l'équivalent en temps réel
+  const getConvertedAmount = () => {
+    if (!amount) return '';
+    const inputAmount = parseFloat(amount);
+    if (payType === 'USDT') {
+      return `≈ ${(inputAmount * platformSettings.usdt_exchange_rate).toLocaleString()} FCFA`;
+    } else {
+      return `≈ ${(inputAmount / platformSettings.usdt_exchange_rate).toFixed(4)} USDT`;
+    }
+  };
+
+  const getMinAmount = () => {
+    return payType === 'USDT' 
+      ? `${platformSettings.min_usdt_withdrawal} USDT`
+      : `${platformSettings.min_withdrawal.toLocaleString()} FCFA`;
+  };
+
+  const getAvailableBalance = () => {
+    const balance = user?.balance_withdrawal || 0;
+    if (payType === 'USDT') {
+      return `${(balance / platformSettings.usdt_exchange_rate).toFixed(4)} USDT (${balance.toLocaleString()} FCFA)`;
+    }
+    return `${balance.toLocaleString()} FCFA`;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header */}
@@ -132,8 +183,8 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
         </div>
         
         <div className="mt-4">
-          <p className="text-sm opacity-90">Solde</p>
-          <p className="text-2xl font-bold">FCFA{user?.balance_withdrawal?.toLocaleString() || '0'}</p>
+          <p className="text-sm opacity-90">Solde Disponible</p>
+          <p className="text-2xl font-bold">{getAvailableBalance()}</p>
         </div>
       </div>
 
@@ -144,34 +195,41 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
           </div>
         )}
 
-        {/* Beneficiary Card */}
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-4 text-white">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">💳</span>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm opacity-90">Nom du titulaire</p>
-              <input
-                type="text"
-                value={beneficiaryName}
-                onChange={(e) => setBeneficiaryName(e.target.value)}
-                placeholder="Entrez le nom du bénéficiaire"
-                className="bg-transparent border-b border-white border-opacity-50 text-white placeholder-white placeholder-opacity-70 py-1 w-full focus:outline-none focus:border-opacity-100"
-              />
+        {/* Bank Card Info */}
+        {userBankCards.length > 0 && (
+          <div className="bg-white rounded-lg p-4 shadow-sm border-l-4 border-green-400">
+            <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+              <CreditCard className="w-5 h-5 mr-2 text-green-600" />
+              Carte Bancaire Enregistrée
+            </h3>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="font-medium text-gray-900">{userBankCards[0].wallet_type.replace('_', ' ').toUpperCase()}</p>
+              <p className="text-sm text-gray-600">{userBankCards[0].card_holder_name}</p>
+              <p className="text-sm text-gray-500 font-mono">{userBankCards[0].card_number}</p>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Amount */}
         <div className="bg-white rounded-lg p-4 shadow-sm">
           <h3 className="font-semibold text-gray-900 mb-3">Montant</h3>
-          <input
-            type="text"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="w-full px-3 py-3 bg-blue-50 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-blue-600 font-medium"
-          />
+          <div className="space-y-3">
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder={`Minimum: ${getMinAmount()}`}
+              className="w-full px-3 py-3 bg-blue-50 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-blue-600 font-medium"
+            />
+            {amount && (
+              <div className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
+                <p className="font-medium">Conversion: {getConvertedAmount()}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Taux: 1 USDT = {platformSettings.usdt_exchange_rate} FCFA
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Transaction Password */}
@@ -194,8 +252,11 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
             </button>
           </div>
           <div className="flex justify-end mt-2">
-            <button className="bg-blue-600 text-white px-4 py-1 rounded text-sm">
-              Historique &gt;
+            <button 
+              onClick={handleHistoryClick}
+              className="bg-blue-600 text-white px-4 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
+            >
+              Historique >
             </button>
           </div>
         </div>
@@ -204,7 +265,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
         <div className="bg-white rounded-lg p-4 shadow-sm">
           <h3 className="font-semibold text-gray-900 mb-4">Pay Type</h3>
           <div className="space-y-3">
-            <label className="flex items-center space-x-3 cursor-pointer">
+            <label className="flex items-center space-x-3 cursor-pointer p-3 border border-gray-200 rounded-lg hover:bg-blue-50 transition-colors">
               <input
                 type="radio"
                 name="payType"
@@ -213,9 +274,12 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
                 onChange={(e) => setPayType(e.target.value)}
                 className="w-5 h-5 text-green-600"
               />
-              <span className="text-gray-700 font-medium">FCFA</span>
+              <div className="flex-1">
+                <span className="text-gray-700 font-medium">FCFA</span>
+                <p className="text-xs text-gray-500">Retrait en Francs CFA</p>
+              </div>
             </label>
-            <label className="flex items-center space-x-3 cursor-pointer">
+            <label className="flex items-center space-x-3 cursor-pointer p-3 border border-gray-200 rounded-lg hover:bg-blue-50 transition-colors">
               <input
                 type="radio"
                 name="payType"
@@ -224,7 +288,10 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
                 onChange={(e) => setPayType(e.target.value)}
                 className="w-5 h-5 text-green-600"
               />
-              <span className="text-gray-700 font-medium">USDT</span>
+              <div className="flex-1">
+                <span className="text-gray-700 font-medium">USDT (TRC-20)</span>
+                <p className="text-xs text-gray-500">Retrait en crypto-monnaie</p>
+              </div>
             </label>
           </div>
         </div>
@@ -234,14 +301,19 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
           <h3 className="text-blue-600 font-semibold mb-4">Explications</h3>
           <div className="space-y-3 text-sm text-gray-600">
             <p>1. <strong>Horaires :</strong> Retraits de {platformSettings.withdrawal_hours.start}h à {platformSettings.withdrawal_hours.end}h (heure du Bénin)</p>
-            <p>2. <strong>Montant :</strong> Minimum FCFA {platformSettings.min_withdrawal.toLocaleString()}</p>
-            <p>3. Pour faciliter le règlement financier, vous ne pouvez demander un retrait que 1 fois par jour</p>
-            <p>4. <strong>Frais :</strong> {platformSettings.withdrawal_fee_rate}% du montant retiré</p>
-            <p>5. <strong>USDT :</strong> Minimum {platformSettings.min_usdt_withdrawal} USDT (1 USDT = {platformSettings.usdt_exchange_rate} FCFA)</p>
+            <p>2. <strong>Montant FCFA :</strong> Minimum {platformSettings.min_withdrawal.toLocaleString()} FCFA</p>
+            <p>3. <strong>Montant USDT :</strong> Minimum {platformSettings.min_usdt_withdrawal} USDT</p>
+            <p>4. Pour faciliter le règlement financier, vous ne pouvez demander un retrait que 1 fois par jour</p>
+            <p>5. <strong>Frais :</strong> {platformSettings.withdrawal_fee_rate}% du montant retiré</p>
+            <p>6. <strong>Conversion :</strong> 1 USDT = {platformSettings.usdt_exchange_rate} FCFA</p>
+            <p>7. <strong>Important :</strong> Le montant sera débité immédiatement, remboursé si rejeté</p>
           </div>
           <div className="flex justify-end mt-4">
-            <button className="bg-blue-600 text-white px-4 py-1 rounded text-sm">
-              Historique &gt;
+            <button 
+              onClick={handleHistoryClick}
+              className="bg-blue-600 text-white px-4 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
+            >
+              Historique >
             </button>
           </div>
         </div>
@@ -249,10 +321,10 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
         {/* Withdraw Button */}
         <button
           onClick={handleWithdraw}
-          disabled={isLoading}
+          disabled={isLoading || isLoadingCards}
           className="w-full bg-blue-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50"
         >
-          {isLoading ? 'Traitement...' : 'Demander un retrait'}
+          {isLoading ? 'Traitement...' : `Demander un retrait ${payType}`}
         </button>
       </div>
 
@@ -260,14 +332,10 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
       {showSystemAlert && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
           <div className="bg-white rounded-lg p-6 w-full max-w-sm animate-slideUp">
-            <button
-              onClick={() => setShowSystemAlert(false)}
-              className="absolute top-4 right-4 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center"
-            >
-              <X className="w-4 h-4 text-gray-600" />
-            </button>
-            
             <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-8 h-8 text-red-600" />
+              </div>
               <h3 className="font-bold text-gray-900 text-lg mb-4">
                 Avertissement du système
               </h3>
