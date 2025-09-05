@@ -6,6 +6,7 @@ import { ReferralService } from '../services/referralService';
 interface InvitePageProps {
   user: any;
   onBack?: () => void;
+  onNavigate?: (page: string) => void;
 }
 
 export const InvitePage: React.FC<InvitePageProps> = ({ user, onBack }) => {
@@ -104,9 +105,11 @@ export const InvitePage: React.FC<InvitePageProps> = ({ user, onBack }) => {
       <div className="px-2 xxs:px-3 xs:px-4 pb-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-gray-900">Niveau de l'équipe</h3>
-          <button className="text-blue-600 text-sm flex items-center">
+          <button 
+            onClick={() => onNavigate('team-details')}
+            className="text-blue-600 text-sm flex items-center hover:text-blue-800 transition-colors"
+          >
             Détails de l'équipe
-            <p className="text-2xl font-bold">FCFA{user?.referral_earnings?.toLocaleString() || '0'}</p>
           </button>
         </div>
 

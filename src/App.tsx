@@ -22,6 +22,7 @@ import { AboutUsPage } from './components/AboutUsPage';
 import { SettingsPage } from './components/SettingsPage';
 import { BalanceDetailsPage } from './components/BalanceDetailsPage';
 import { TelegramPage } from './components/TelegramPage';
+import { TeamDetailsPage } from './components/TeamDetailsPage';
 import { supabase } from './lib/supabase';
 
 function App() {
@@ -151,7 +152,7 @@ function App() {
       case 'investments':
         return <InvestmentsList user={user} onBack={() => handleNavigation('dashboard')} />;
       case 'invite':
-        return <InvitePage user={user} onBack={() => handleNavigation('dashboard')} />;
+        return <InvitePage user={user} onBack={() => handleNavigation('dashboard')} onNavigate={handleNavigation} />;
       case 'billet':
         return <BilletPage user={user} onBack={() => handleNavigation('dashboard')} />;
       case 'account':
@@ -163,7 +164,9 @@ function App() {
       case 'bankcard':
         return <BankCardPage user={user} onBack={() => handleNavigation('account')} />;
       case 'team':
-        return <TeamPage user={user} onBack={() => handleNavigation('account')} />;
+        return <TeamPage user={user} onBack={() => handleNavigation('account')} onNavigate={handleNavigation} />;
+      case 'team-details':
+        return <TeamDetailsPage user={user} onBack={() => handleNavigation('team')} />;
       case 'products':
         return <ProductsPage onBack={() => handleNavigation('account')} />;
       case 'product-progress':
@@ -192,7 +195,7 @@ function App() {
       case 'invest':
         return <InvestmentsList />;
       case 'invite':
-        return <InvitePage user={user} />;
+        return <InvitePage user={user} onNavigate={handleNavigation} />;
       case 'billet':
         return <BilletPage user={user} />;
       case 'account':
