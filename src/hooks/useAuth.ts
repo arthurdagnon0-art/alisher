@@ -70,6 +70,9 @@ export const useAuth = () => {
               
               setUser(formattedUser);
               localStorage.setItem('user', JSON.stringify(formattedUser));
+              
+              // Déclencher une mise à jour de l'interface
+              window.dispatchEvent(new CustomEvent('userDataUpdated', { detail: formattedUser }));
             }
           }
         } catch (error) {

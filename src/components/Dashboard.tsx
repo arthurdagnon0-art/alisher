@@ -30,6 +30,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
         console.error('Erreur parsing user data:', error);
       }
     }
+    
+    // Écouter les mises à jour de données utilisateur
+    const handleUserDataUpdate = (event: any) => {
+      setCurrentUser(event.detail);
+    };
+    
+    window.addEventListener('userDataUpdated', handleUserDataUpdate);
+    return () => window.removeEventListener('userDataUpdated', handleUserDataUpdate);
   }, []);
 
   // Charger les commissions de parrainage

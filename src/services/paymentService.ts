@@ -182,12 +182,11 @@ export class PaymentService {
 
       // Créditer le solde de dépôt de l'utilisateur avec SQL pour éviter les problèmes de concurrence
       const { error: balanceError } = await supabase
-        .from('users')
-        .update({
-          balance_deposit: supabase.sql`COALESCE(balance_deposit, 0) + ${submission.amount}`,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', submission.user_id);
+        .rpc('increment_balance', {
+          user_id: submission.user_id,
+          amount: submission.amount,
+          balance_type: 'deposit'
+        });
 
       if (balanceError) throw balanceError;
 

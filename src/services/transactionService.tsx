@@ -148,10 +148,18 @@ export class TransactionService {
       if (error) throw error;
 
       // Déduire immédiatement du solde de retrait avec SQL pour éviter les problèmes de concurrence
+      const { data: currentUser, error: userError } = await supabase
+        .from('users')
+        .select('balance_withdrawal')
+        .eq('id', userId)
+        .single();
+
+      if (userError) throw userError;
+
       const { error: updateError } = await supabase
         .from('users')
         .update({
-          balance_withdrawal: supabase.sql`COALESCE(balance_withdrawal, 0) - ${totalAmount}`,
+          balance_withdrawal: (currentUser.balance_withdrawal || 0) - totalAmount,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId);
@@ -241,10 +249,18 @@ export class TransactionService {
 
       // Si c'est un dépôt, créditer le solde
       if (transaction.type === 'deposit') {
+        const { data: currentUser, error: userError } = await supabase
+          .from('users')
+          .select('balance_deposit')
+          .eq('id', transaction.user_id)
+          .single();
+
+        if (userError) throw userError;
+
         const { error: balanceError } = await supabase
           .from('users')
           .update({
-            balance_deposit: supabase.sql`COALESCE(balance_deposit, 0) + ${transaction.amount}`,
+            balance_deposit: (currentUser.balance_deposit || 0) + transaction.amount,
             updated_at: new Date().toISOString()
           })
           .eq('id', transaction.user_id);
@@ -298,12 +314,11 @@ export class TransactionService {
         
         // Rembourser au balance_withdrawal avec SQL pour éviter les problèmes de concurrence
         const { error: refundError } = await supabase
-          .from('users')
-          .update({
-            balance_withdrawal: supabase.sql`COALESCE(balance_withdrawal, 0) + ${refundAmount}`,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', transaction.user_id);
+          .rpc('increment_balance', {
+            user_id: transaction.user_id,
+            amount: refundAmount,
+            balance_type: 'withdrawal'
+          });
 
         if (refundError) throw refundError;
 

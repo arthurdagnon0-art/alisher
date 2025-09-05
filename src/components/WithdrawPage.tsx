@@ -188,13 +188,10 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
         window.dispatchEvent(new CustomEvent('refreshUserData'));
         
         // Mettre à jour immédiatement l'état local pour refléter la déduction
-        const newBalance = getWithdrawableBalance(currentUser) - (finalAmount + ((finalAmount * platformSettings.withdrawal_fee_rate) / 100));
-        const updatedUser = {
-          ...currentUser,
-          balance_withdrawal: newBalance
-        };
-        setCurrentUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+        // Attendre un peu puis rafraîchir les données depuis la base
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('refreshUserData'));
+        }, 1000);
         
         // Marquer qu'un retrait a été effectué aujourd'hui
         setHasTodayWithdrawal(true);

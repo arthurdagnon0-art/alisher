@@ -221,7 +221,7 @@ export class InvestmentService {
         .from('users')
         .update({
           balance_withdrawal: newBalanceWithdrawal,
-          total_invested: supabase.sql`total_invested + ${amount}`,
+          total_invested: (Number(user.total_invested) || 0) + amount,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId);

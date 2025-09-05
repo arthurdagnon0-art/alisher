@@ -17,6 +17,16 @@ export const AccountPage: React.FC<AccountPageProps> = ({ user, onLogout, onNavi
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [totalCommission, setTotalCommission] = React.useState(0);
 
+  // Écouter les mises à jour de données utilisateur
+  React.useEffect(() => {
+    const handleUserDataUpdate = (event: any) => {
+      setCurrentUser(event.detail);
+    };
+    
+    window.addEventListener('userDataUpdated', handleUserDataUpdate);
+    return () => window.removeEventListener('userDataUpdated', handleUserDataUpdate);
+  }, []);
+
   // Actualisation automatique supprimée - utilisation du bouton de rafraîchissement manuel uniquement
 
   // Charger les commissions de parrainage
