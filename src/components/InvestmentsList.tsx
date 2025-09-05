@@ -617,7 +617,8 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     <span>Traitement...</span>
                   </div>
-                 {(currentUser?.balance_deposit || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0) && (
+                ) : (
+                  (currentUser?.balance_deposit || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0) ? 'Solde insuffisant' :
                   selectedPackage?.type === 'vip' ? 'Investir Maintenant' : 'Staker Maintenant'
                 )}
               </button>
