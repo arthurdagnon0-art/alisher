@@ -553,8 +553,7 @@ export const BankCardPage: React.FC<BankCardPageProps> = ({ user, onBack }) => {
           <div className="space-y-3 text-sm text-gray-700">
             <p>1. Vous pouvez ajouter <strong>une seule carte bancaire</strong> pour les retraits.</p>
             <p>2. Vous pouvez <strong>modifier ou supprimer</strong> votre carte à tout moment.</p>
-            <p>3. Les portefeuilles disponibles sont <strong>gérés par l'administrateur</strong>.</p>
-            <p>4. Pour USDT, utilisez uniquement des <strong>adresses TRC-20</strong>.</p>
+            <p>3. Pour USDT, utilisez uniquement des <strong>adresses TRC-20</strong>.</p>
           </div>
         </div>
       </div>
