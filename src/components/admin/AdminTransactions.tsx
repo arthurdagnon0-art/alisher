@@ -37,7 +37,7 @@ export const AdminTransactions: React.FC<AdminTransactionsProps> = ({ onBack }) 
     try {
       const result = await TransactionService.approveTransaction(transactionId);
       if (result.success) {
-        alert('Transaction approuvée avec succès !');
+        alert('Transaction approuvée et solde mis à jour avec succès !');
       } else {
         alert('Erreur: ' + result.error);
       }

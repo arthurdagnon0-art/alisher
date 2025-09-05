@@ -183,7 +183,7 @@ export class PaymentService {
       // Récupérer le solde actuel et le mettre à jour
       const { data: currentUser, error: getUserError } = await supabase
         .from('users')
-        .select('balance_withdrawal')
+        .select('balance_deposit')
         .eq('id', submission.user_id)
         .single();
 
