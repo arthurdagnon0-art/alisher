@@ -189,7 +189,7 @@ export class PaymentService {
 
       if (getUserError) throw getUserError;
 
-      // Créditer le solde disponible (withdrawal) de l'utilisateur
+      // Créditer le solde de dépôt de l'utilisateur
       const { error: balanceError } = await supabase
         .from('users')
         .update({

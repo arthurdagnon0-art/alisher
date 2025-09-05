@@ -466,7 +466,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowInvestModal(false);
-              setError('');
+              setError('Solde de dépôt insuffisant. Veuillez d\'abord recharger votre compte.');
               setInvestAmount('');
             }
           }}
