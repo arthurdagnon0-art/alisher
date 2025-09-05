@@ -218,7 +218,7 @@ export class TransactionService {
       if (transaction.type === 'deposit') {
         const { data: user, error: userError } = await supabase
           .from('users')
-          .select('balance_withdrawal')
+          .select('balance_deposit')
           .eq('id', transaction.user_id)
           .single();
 
@@ -227,7 +227,7 @@ export class TransactionService {
         await supabase
           .from('users')
           .update({
-            balance_withdrawal: (user.balance_withdrawal || 0) + transaction.amount,
+            balance_deposit: (user.balance_deposit || 0) + transaction.amount,
             updated_at: new Date().toISOString()
           })
           .eq('id', transaction.user_id);

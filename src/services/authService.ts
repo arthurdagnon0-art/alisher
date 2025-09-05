@@ -209,6 +209,7 @@ export class AuthService {
       name: userData.name,
       country: userData.country,
       balance_deposit: userData.balance_deposit || 0,
+      balance_deposit: userData.balance_deposit || 0,
       balance_withdrawal: userData.balance_withdrawal || 0,
       total_invested: userData.total_invested || 0,
       total_earned: userData.total_earned || 0,

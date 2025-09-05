@@ -193,7 +193,7 @@ export class PaymentService {
       const { error: balanceError } = await supabase
         .from('users')
         .update({
-          balance_withdrawal: (currentUser.balance_withdrawal || 0) + submission.amount,
+          balance_deposit: (currentUser.balance_deposit || 0) + submission.amount,
           updated_at: new Date().toISOString()
         })
         .eq('id', submission.user_id);

@@ -118,6 +118,7 @@ function App() {
           name: updatedUser.name,
           country: updatedUser.country,
           balance_deposit: updatedUser.balance_deposit || 0,
+          balance_deposit: updatedUser.balance_deposit || 0,
           balance_withdrawal: updatedUser.balance_withdrawal || 0,
           total_invested: updatedUser.total_invested || 0,
           total_earned: updatedUser.total_earned || 0,
