@@ -89,6 +89,24 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
     }
   };
 
+  const loadCommissionData = async () => {
+    if (!currentUser?.id) return;
+    
+    try {
+      const { data: commissions, error } = await supabase
+        .from('referral_bonuses')
+        .select('amount')
+        .eq('referrer_id', currentUser.id);
+
+      if (!error && commissions) {
+        const total = commissions.reduce((sum, c) => sum + c.amount, 0);
+        setTotalCommission(total);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des commissions:', error);
+    }
+  };
+
   const hasActiveVIP = () => {
     const hasVIP = userInvestments.vip.some((investment: any) => investment.status === 'active');
     console.log('🔍 Vérification VIP actif:', { 

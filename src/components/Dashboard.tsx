@@ -83,7 +83,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           name: updatedUser.name,
           country: updatedUser.country,
           balance_deposit: updatedUser.balance_deposit || 0,
-          balance_withdrawal: (updatedUser.balance_deposit || 0) + (updatedUser.balance_withdrawal || 0), // Solde disponible total
+          balance_withdrawal: (updatedUser.balance_deposit || 0), // Solde disponible total
           total_invested: updatedUser.total_invested || 0,
           referral_code: updatedUser.referral_code,
           referred_by: updatedUser.referred_by,
@@ -192,7 +192,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           <div className="text-center mb-3 xxs:mb-4">
             <p className="text-xs xxs:text-sm opacity-90 mb-1 xxs:mb-2">Solde Disponible</p>
             <p className="text-xl xxs:text-2xl xs:text-3xl font-bold">
-              FCFA{(currentUser?.balance_deposit || 0).toLocaleString()}
+              FCFA{((currentUser?.balance_deposit || 0) + totalCommission).toLocaleString()}
             </p>
           </div>
           
