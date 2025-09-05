@@ -555,8 +555,6 @@ export const BankCardPage: React.FC<BankCardPageProps> = ({ user, onBack }) => {
             <p>2. Vous pouvez <strong>modifier ou supprimer</strong> votre carte à tout moment.</p>
             <p>3. Les portefeuilles disponibles sont <strong>gérés par l'administrateur</strong>.</p>
             <p>4. Pour USDT, utilisez uniquement des <strong>adresses TRC-20</strong>.</p>
-            <p>5. Cette carte sera visible par l'administrateur lors de la validation de vos retraits.</p>
-            <p>6. <strong>Conversion automatique :</strong> 1 USDT = {platformSettings.usdt_exchange_rate} FCFA</p>
           </div>
         </div>
       </div>
