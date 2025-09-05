@@ -8,9 +8,6 @@ interface TeamPageProps {
   user: User;
   onBack: () => void;
   onNavigate?: (page: string) => void;
-}
-
-export const TeamPage: React.FC<TeamPageProps> = ({ user, onBack, onNavigate }) => {
   const [teamStats, setTeamStats] = React.useState<any>({
     level1: { count: 0, active: 0, total_invested: 0 },
     level2: { count: 0, active: 0, total_invested: 0 },

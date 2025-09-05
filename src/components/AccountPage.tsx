@@ -85,11 +85,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({ user, onLogout, onNavi
 
       {/* VIP Status */}
       <div className="px-2 xxs:px-3 xs:px-4 mt-4">
-        <div className="relative bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-6 text-white overflow-hidden" style = 
-        {{backgroundImage:'url(https://i.postimg.cc/nL4XPTYy/vip-bg.png)', 
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-         }}>
+        <VIPStatusCard user={currentUser} onNavigate={onNavigate} />
+      </div>
         
           {/* Animated background particles */}
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
