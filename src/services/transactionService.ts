@@ -128,8 +128,7 @@ export class TransactionService {
       let query = supabase
         .from('transactions')
         .select(`
-          *,
-          bank_cards(wallet_type, card_holder_name, card_number)
+          *
         `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
