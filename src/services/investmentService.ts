@@ -116,12 +116,27 @@ export class InvestmentService {
       if (investmentError) throw investmentError;
 
       // Déduire le montant du solde et mettre à jour total_invested
-      // Déduire uniquement du balance_withdrawal (commissions + bonus)
-      const newBalanceWithdrawal = (Number(user.balance_withdrawal) || 0) - investmentAmount;
+      // Déduire d'abord du balance_deposit, puis du balance_withdrawal si nécessaire
+      const balanceDeposit = Number(user.balance_deposit) || 0;
+      const balanceWithdrawal = Number(user.balance_deposit) || 0;
+      
+      let newBalanceDeposit = balanceDeposit;
+      let newBalanceWithdrawal = balanceWithdrawal;
+      
+      if (investmentAmount <= balanceDeposit) {
+        // Déduire entièrement du balance_deposit
+        newBalanceDeposit = balanceDeposit - investmentAmount;
+      } else {
+        // Déduire tout le balance_deposit et le reste du balance_withdrawal
+        const remaining = investmentAmount - balanceDeposit;
+        newBalanceDeposit = 0;
+        newBalanceWithdrawal = balanceWithdrawal - remaining;
+      }
       
       const { error: updateError } = await supabase
         .from('users')
         .update({
+          balance_deposit: newBalanceDeposit,
           balance_withdrawal: newBalanceWithdrawal,
           total_invested: (Number(user.total_invested) || 0) + investmentAmount,
           updated_at: new Date().toISOString()
@@ -215,27 +230,12 @@ export class InvestmentService {
       if (investmentError) throw investmentError;
 
       // Déduire le montant du solde et mettre à jour total_invested
-      // Déduire d'abord du balance_deposit, puis du balance_withdrawal si nécessaire
-      const balanceDeposit = Number(user.balance_deposit) || 0;
-      const balanceWithdrawal = Number(user.balance_withdrawal) || 0;
-      
-      let newBalanceDeposit = balanceDeposit;
-      let newBalanceWithdrawal = balanceWithdrawal;
-      
-      if (amount <= balanceDeposit) {
-        // Déduire entièrement du balance_deposit
-        newBalanceDeposit = balanceDeposit - amount;
-      } else {
-        // Déduire tout le balance_deposit et le reste du balance_withdrawal
-        const remaining = amount - balanceDeposit;
-        newBalanceDeposit = 0;
-        newBalanceWithdrawal = balanceWithdrawal - remaining;
-      }
+      // Déduire uniquement du balance_withdrawal (commissions + bonus)
+      const newBalanceWithdrawal = (Number(user.balance_withdrawal) || 0) - amount;
       
       const { error: updateError } = await supabase
         .from('users')
         .update({
-          balance_deposit: newBalanceDeposit,
           balance_withdrawal: newBalanceWithdrawal,
           total_invested: supabase.sql`total_invested + ${amount}`,
           updated_at: new Date().toISOString()
