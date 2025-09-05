@@ -9,7 +9,6 @@ interface InvitePageProps {
   onNavigate?: (page: string) => void;
 }
 
-export const InvitePage: React.FC<InvitePageProps> = ({ user, onBack }) => {
 export const InvitePage: React.FC<InvitePageProps> = ({ user, onBack, onNavigate }) => {
   const [teamStats, setTeamStats] = React.useState<any>({
     level1: { count: 0, active: 0 },
