@@ -118,21 +118,24 @@ function App() {
           .eq('referrer_id', updatedUser.id);
 
         const totalCommission = commissions?.reduce((sum, c) => sum + c.amount, 0) || 0;
+        
+        const formattedUser = {
+          id: updatedUser.id,
           phone: updatedUser.phone,
           email: updatedUser.email,
           name: updatedUser.name,
           country: updatedUser.country,
           balance_deposit: updatedUser.balance_deposit || 0,
-          balance_deposit: updatedUser.balance_deposit || 0,
-          balance_withdrawal: updatedUser.balance_withdrawal || 0,
+          balance_withdrawal: totalCommission,
           total_invested: updatedUser.total_invested || 0,
-          total_earned: updatedUser.total_earned || 0,
           total_earned: updatedUser.total_earned || 0,
           referral_code: updatedUser.referral_code,
           referred_by: updatedUser.referred_by,
+          vip_level: updatedUser.vip_level || 0,
           is_active: updatedUser.is_active,
           is_blocked: updatedUser.is_blocked,
           created_at: updatedUser.created_at,
+          updated_at: updatedUser.updated_at
         };
         
         localStorage.setItem('user', JSON.stringify(formattedUser));
@@ -142,7 +145,6 @@ function App() {
     } catch (error) {
       console.error('Erreur lors du rafraîchissement global:', error);
     }
-          balance_withdrawal: totalCommission, // Commissions + bonus uniquement
   if (!isAuthenticated) {
     if (showSetupAccount) {
       return (

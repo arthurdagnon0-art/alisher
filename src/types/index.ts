@@ -5,7 +5,6 @@ export interface User {
   name: string;
   country: string;
   balance_deposit: number;
-  balance_deposit: number;
   balance_withdrawal: number;
   total_invested: number;
   total_earned: number;
