@@ -56,7 +56,7 @@ export const useAuth = () => {
                 name: updatedUser.name,
                 country: updatedUser.country,
                 balance_deposit: updatedUser.balance_deposit || 0,
-                balance_withdrawal: (updatedUser.balance_withdrawal || 0), // Solde retirable réel
+                balance_withdrawal: (updatedUser.balance_withdrawal || 0) + totalCommission, // Solde retirable = DB + commissions
                 total_invested: updatedUser.total_invested || 0,
                 total_earned: updatedUser.total_earned || 0,
                 referral_code: updatedUser.referral_code,
@@ -93,7 +93,6 @@ export const useAuth = () => {
       // Sauvegarder la session localement
       localStorage.setItem('user', JSON.stringify(result.user));
       setUser(result.user);
-      setIsAuthenticated(true);
     } catch (error: any) {
       console.error('Erreur de connexion:', error);
       throw new Error(error.message || 'Erreur de connexion');

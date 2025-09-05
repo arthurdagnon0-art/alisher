@@ -116,7 +116,17 @@ export class TransactionService {
       const totalAmount = amount + fees;
 
       // Calculer le solde disponible = balance_deposit + balance_withdrawal
-      const withdrawableBalance = user.balance_withdrawal || 0;
+      // Le solde retirable = balance_withdrawal uniquement (commissions + bonus + revenus)
+      const withdrawableBalance = Number(user.balance_withdrawal) || 0;
+      
+      console.log('💰 Vérification solde backend:', {
+        userId,
+        amount,
+        fees,
+        totalAmount,
+        withdrawableBalance,
+        userBalanceWithdrawal: user.balance_withdrawal
+      });
       
       // Vérifier le solde disponible (en FCFA)
       if (withdrawableBalance < totalAmount) {
@@ -143,13 +153,12 @@ export class TransactionService {
 
       // Déduire du solde disponible (d'abord balance_withdrawal, puis balance_deposit si nécessaire)
       // Déduire uniquement du balance_withdrawal (commissions + bonus)
-      const newBalanceWithdrawal = (user.balance_withdrawal || 0) - totalAmount;
+      const newBalanceWithdrawal = withdrawableBalance - totalAmount;
       
       const { error: updateError } = await supabase
         .from('users')
         .update({
           balance_withdrawal: newBalanceWithdrawal,
-          total_earned: (user.total_earned || 0), // Maintenir total_earned
           updated_at: new Date().toISOString()
         })
         .eq('id', userId);

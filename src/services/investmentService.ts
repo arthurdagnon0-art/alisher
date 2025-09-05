@@ -89,8 +89,8 @@ export class InvestmentService {
         total_invested: user.total_invested
       });
 
-      // Calculer le solde disponible = balance_deposit + balance_withdrawal (commissions + bonus)
-      const availableBalance = (Number(user.balance_deposit) || 0);
+      // Le solde disponible pour investissement = balance_deposit (solde de recharge)
+      const availableBalance = Number(user.balance_deposit) || 0;
       const investmentAmount = Number(amount);
 
       if (availableBalance < investmentAmount) {
@@ -116,28 +116,13 @@ export class InvestmentService {
       if (investmentError) throw investmentError;
 
       // Déduire le montant du solde et mettre à jour total_invested
-      // Déduire d'abord du balance_deposit, puis du balance_withdrawal si nécessaire
-      const balanceDeposit = Number(user.balance_deposit) || 0;
-      const balanceWithdrawal = Number(user.balance_deposit) || 0;
-      
-      let newBalanceDeposit = balanceDeposit;
-      let newBalanceWithdrawal = balanceWithdrawal;
-      
-      if (investmentAmount <= balanceDeposit) {
-        // Déduire entièrement du balance_deposit
-        newBalanceDeposit = balanceDeposit - investmentAmount;
-      } else {
-        // Déduire tout le balance_deposit et le reste du balance_withdrawal
-        const remaining = investmentAmount - balanceDeposit;
-        newBalanceDeposit = 0;
-        newBalanceWithdrawal = balanceWithdrawal - remaining;
-      }
+      // Déduire uniquement du balance_deposit (solde de recharge)
+      const newBalanceDeposit = availableBalance - investmentAmount;
       
       const { error: updateError } = await supabase
         .from('users')
         .update({
           balance_deposit: newBalanceDeposit,
-          balance_withdrawal: newBalanceWithdrawal,
           total_invested: (Number(user.total_invested) || 0) + investmentAmount,
           updated_at: new Date().toISOString()
         })
@@ -193,7 +178,7 @@ export class InvestmentService {
       // Vérifier le solde utilisateur
       const { data: user, error: userError } = await supabase
         .from('users')
-        .select('balance_deposit, balance_withdrawal, total_invested')
+        .select('balance_withdrawal, total_invested')
         .eq('id', userId)
         .single();
 
@@ -201,8 +186,8 @@ export class InvestmentService {
         throw new Error('Utilisateur non trouvé');
       }
 
-      // Calculer le solde disponible = balance_deposit + balance_withdrawal (commissions + bonus)
-      const availableBalance = (Number(user.balance_deposit) || 0) + (Number(user.balance_withdrawal) || 0);
+      // Le solde disponible pour staking = balance_withdrawal (commissions + bonus + revenus)
+      const availableBalance = Number(user.balance_withdrawal) || 0;
       
       if (availableBalance < amount) {
         throw new Error('Solde insuffisant');
@@ -230,8 +215,7 @@ export class InvestmentService {
       if (investmentError) throw investmentError;
 
       // Déduire le montant du solde et mettre à jour total_invested
-      // Déduire uniquement du balance_withdrawal (commissions + bonus)
-      const newBalanceWithdrawal = (Number(user.balance_withdrawal) || 0) - amount;
+      const newBalanceWithdrawal = availableBalance - amount;
       
       const { error: updateError } = await supabase
         .from('users')

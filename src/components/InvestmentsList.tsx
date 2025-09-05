@@ -236,7 +236,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
           name: updatedUser.name,
           country: updatedUser.country,
           balance_deposit: updatedUser.balance_deposit || 0,
-          balance_withdrawal: (updatedUser.balance_deposit || 0) + (updatedUser.balance_withdrawal || 0), // Solde disponible total
+          balance_withdrawal: updatedUser.balance_withdrawal || 0, // Solde retirable réel
           total_invested: updatedUser.total_invested || 0,
           referral_code: updatedUser.referral_code,
           referred_by: updatedUser.referred_by,

@@ -27,6 +27,16 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
   React.useEffect(() => {
     loadUserBankCards();
     checkTodayWithdrawals();
+    // Mettre à jour les données utilisateur depuis localStorage
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        setCurrentUser(userData);
+      } catch (error) {
+        console.error('Erreur parsing user data:', error);
+      }
+    }
   }, [user?.id]);
 
   const loadUserBankCards = async () => {
@@ -67,6 +77,12 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
     } finally {
       setIsCheckingWithdrawals(false);
     }
+  };
+
+  // Calculer le solde retirable réel
+  const getWithdrawableBalance = () => {
+    // Le solde retirable = balance_withdrawal (commissions + bonus + revenus)
+    return currentUser?.balance_withdrawal || 0;
   };
 
   const handleWithdraw = async () => {
@@ -118,8 +134,18 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
     const fees = (finalAmount * platformSettings.withdrawal_fee_rate) / 100;
     const totalAmount = finalAmount + fees;
 
-    if (totalAmount > user.balance_withdrawal) {
-      setError('Solde insuffisant (frais inclus)');
+    const withdrawableBalance = getWithdrawableBalance();
+    
+    console.log('💰 Vérification solde retrait:', {
+      withdrawableBalance,
+      finalAmount,
+      fees,
+      totalAmount,
+      userBalanceWithdrawal: currentUser?.balance_withdrawal
+    });
+
+    if (totalAmount > withdrawableBalance) {
+      setError(`Solde retirable insuffisant. Disponible: ${withdrawableBalance.toLocaleString()} FCFA, Requis: ${totalAmount.toLocaleString()} FCFA (frais inclus)`);
       return;
     }
 
@@ -206,7 +232,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
   };
 
   const getAvailableBalance = () => {
-    const balance = user?.balance_withdrawal || 0;
+    const balance = getWithdrawableBalance();
     if (payType === 'USDT') {
       return `${(balance / platformSettings.usdt_exchange_rate).toFixed(4)} USDT (${balance.toLocaleString()} FCFA)`;
     }
@@ -226,7 +252,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
         
         <div className="mt-4">
           <p className="text-sm opacity-90">Solde Disponible</p>
-          <p className="text-2xl font-bold">FCFA{(user?.balance_deposit || 0).toLocaleString()}</p>
+          <p className="text-2xl font-bold">FCFA{getWithdrawableBalance().toLocaleString()}</p>
         </div>
       </div>
 
@@ -280,7 +306,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
             />
             {amount && (
               <div className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
-                <p className="font-medium">Solde retirable: FCFA {(user?.balance_withdrawal || 0).toLocaleString()}</p>
+                <p className="font-medium">Solde retirable: FCFA {getWithdrawableBalance().toLocaleString()}</p>
                 <p className="text-xs text-orange-600 mt-1">
                   Frais de retrait: {platformSettings.withdrawal_fee_rate}% = FCFA {amount ? Math.round((parseFloat(amount) * (payType === 'USDT' ? platformSettings.usdt_exchange_rate : 1) * platformSettings.withdrawal_fee_rate) / 100).toLocaleString() : '0'}
                 </p>
