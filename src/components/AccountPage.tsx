@@ -209,7 +209,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({ user, onLogout, onNavi
               <p className="text-xl font-bold text-blue-600 animate-pulse">FCFA{currentUser?.balance_deposit?.toLocaleString() || '0'}</p>
             </div>
             <div className="text-center transform hover:scale-105 transition-all duration-300">
-              <p className="text-sm text-gray-600 mb-1">Solde de Retrait</p>
+              <p className="text-sm text-gray-600 mb-1">Solde Disponible</p>
               <p className="text-xl font-bold text-green-600 animate-pulse delay-200">FCFA{currentUser?.balance_withdrawal?.toLocaleString() || '0'}</p>
             </div>
           </div>

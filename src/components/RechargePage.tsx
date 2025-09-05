@@ -149,7 +149,7 @@ export const RechargePage: React.FC<RechargePageProps> = ({ user, onBack }) => {
         </div>
         
         <div className="mt-4">
-          <p className="text-sm opacity-90">Solde Actuel</p>
+          <p className="text-sm opacity-90">Solde Disponible</p>
           <p className="text-2xl font-bold">FCFA{user?.balance_withdrawal?.toLocaleString() || '0'}</p>
         </div>
       </div>

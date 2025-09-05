@@ -168,7 +168,7 @@ export const BalanceDetailsPage: React.FC<BalanceDetailsPageProps> = ({ onBack, 
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <h1 className="text-xl font-bold flex-1 text-center">Détails du solde</h1>
+          <h1 className="text-xl font-bold flex-1 text-center">Mon Solde</h1>
         </div>
       </div>
 
