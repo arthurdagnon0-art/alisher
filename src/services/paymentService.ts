@@ -275,4 +275,98 @@ export class PaymentService {
       };
     }
   }
+
+  // Traiter les commissions de parrainage pour le premier dépôt uniquement
+  private static async processFirstDepositReferralCommissions(userId: string, amount: number) {
+    try {
+      // Récupérer l'utilisateur avec son parrain
+      const { data: user } = await supabase
+        .from('users')
+        .select('name, referred_by')
+        .eq('id', userId)
+        .single();
+
+      if (!user?.referred_by) {
+        return; // Pas de parrain
+      }
+
+      const rates = { level1: 11, level2: 2, level3: 1 };
+
+      // Niveau 1
+      await this.createReferralBonus(user.referred_by, userId, user.name, amount, rates.level1, 1);
+
+      // Niveau 2
+      const { data: level1Referrer } = await supabase
+        .from('users')
+        .select('referred_by')
+        .eq('id', user.referred_by)
+        .single();
+
+      if (level1Referrer?.referred_by) {
+        await this.createReferralBonus(level1Referrer.referred_by, userId, user.name, amount, rates.level2, 2);
+      }
+
+      // Niveau 3
+      if (level1Referrer?.referred_by) {
+        const { data: level2Referrer } = await supabase
+          .from('users')
+          .select('referred_by')
+          .eq('id', level1Referrer.referred_by)
+          .single();
+
+        if (level2Referrer?.referred_by) {
+          await this.createReferralBonus(level2Referrer.referred_by, userId, user.name, amount, rates.level3, 3);
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors du traitement des commissions de premier dépôt:', error);
+    }
+  }
+
+  // Créer une commission de parrainage
+  private static async createReferralBonus(
+    referrerId: string,
+    referredId: string,
+    referredName: string,
+    depositAmount: number,
+    percentage: number,
+    level: number
+  ) {
+    const bonusAmount = (depositAmount * percentage) / 100;
+
+    console.log(`💸 Commission premier dépôt: ${bonusAmount} FCFA pour le niveau ${level}`);
+
+    // Créer la commission
+    await supabase
+      .from('referral_bonuses')
+      .insert({
+        referrer_id: referrerId,
+        referred_id: referredId,
+        referred_name: referredName,
+        level,
+        amount: bonusAmount,
+        percentage
+      });
+
+    // Ajouter au solde de retrait du parrain
+    await supabase
+      .from('users')
+      .update({
+        balance_withdrawal: supabase.sql`COALESCE(balance_withdrawal, 0) + ${bonusAmount}`,
+        total_earned: supabase.sql`COALESCE(total_earned, 0) + ${bonusAmount}`,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', referrerId);
+
+    // Créer la transaction
+    await supabase
+      .from('transactions')
+      .insert({
+        user_id: referrerId,
+        type: 'referral',
+        amount: bonusAmount,
+        status: 'completed',
+        reference: `REF-FIRST-L${level}-${referredId.substring(0, 8)}`
+      });
+  }
 }
