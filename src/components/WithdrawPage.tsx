@@ -23,6 +23,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
   const [isLoadingCards, setIsLoadingCards] = useState(true);
   const [hasTodayWithdrawal, setHasTodayWithdrawal] = useState(false);
   const [isCheckingWithdrawals, setIsCheckingWithdrawals] = useState(true);
+  const [currentUser, setCurrentUser] = useState(user);
 
   React.useEffect(() => {
     loadUserBankCards();
@@ -80,9 +81,9 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
   };
 
   // Calculer le solde retirable réel
-  const getWithdrawableBalance = () => {
+  const getWithdrawableBalance = (userData: any) => {
     // Le solde retirable = balance_withdrawal (commissions + bonus + revenus)
-    return currentUser?.balance_withdrawal || 0;
+    return userData?.balance_withdrawal || 0;
   };
 
   const handleWithdraw = async () => {
@@ -134,7 +135,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
     const fees = (finalAmount * platformSettings.withdrawal_fee_rate) / 100;
     const totalAmount = finalAmount + fees;
 
-    const withdrawableBalance = getWithdrawableBalance();
+    const withdrawableBalance = getWithdrawableBalance(currentUser);
     
     console.log('💰 Vérification solde retrait:', {
       withdrawableBalance,
@@ -232,7 +233,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
   };
 
   const getAvailableBalance = () => {
-    const balance = getWithdrawableBalance();
+    const balance = getWithdrawableBalance(currentUser);
     if (payType === 'USDT') {
       return `${(balance / platformSettings.usdt_exchange_rate).toFixed(4)} USDT (${balance.toLocaleString()} FCFA)`;
     }
@@ -252,7 +253,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
         
         <div className="mt-4">
           <p className="text-sm opacity-90">Solde Disponible</p>
-          <p className="text-2xl font-bold">FCFA{getWithdrawableBalance().toLocaleString()}</p>
+          <p className="text-2xl font-bold">FCFA{getWithdrawableBalance(currentUser).toLocaleString()}</p>
         </div>
       </div>
 
@@ -306,7 +307,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
             />
             {amount && (
               <div className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
-                <p className="font-medium">Solde retirable: FCFA {getWithdrawableBalance().toLocaleString()}</p>
+                <p className="font-medium">Solde retirable: FCFA {getWithdrawableBalance(currentUser).toLocaleString()}</p>
                 <p className="text-xs text-orange-600 mt-1">
                   Frais de retrait: {platformSettings.withdrawal_fee_rate}% = FCFA {amount ? Math.round((parseFloat(amount) * (payType === 'USDT' ? platformSettings.usdt_exchange_rate : 1) * platformSettings.withdrawal_fee_rate) / 100).toLocaleString() : '0'}
                 </p>
