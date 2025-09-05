@@ -7,7 +7,7 @@ interface VIPLevelsPageProps {
 
 export const VIPLevelsPage: React.FC<VIPLevelsPageProps> = ({ onBack }) => {
   const vipLevels = [
-    { level: 'V0', amount: '0.00', bgColor: 'bg-gray-300', textColor: 'text-gray-600', src:'https://i.postimg.cc/t4rB9RYG/icon-0.png'},
+    
     { level: 'V1', amount: '2000.00', bgColor: 'bg-blue-200', textColor: 'text-blue-600', src:'https://i.postimg.cc/mgZdx1ZS/icon-1.png' },
     { level: 'V2', amount: '35000.00', bgColor: 'bg-blue-200', textColor: 'text-blue-600', src:'https://i.postimg.cc/nLC0r8Dj/icon-2.png' },
     { level: 'V3', amount: '150000.00', bgColor: 'bg-yellow-200', textColor: 'text-yellow-700', src:'https://i.postimg.cc/RVLPbLmF/icon-3.png' },
