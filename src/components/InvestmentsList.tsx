@@ -105,7 +105,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
   const handleInvest = async (packageData: any, type: 'vip' | 'staking') => {
     // Vérifier si l'utilisateur a un VIP actif avant d'autoriser le staking
     if (type === 'staking' && !hasActiveVIP()) {
-      setError('You must activate a VIP first.');
+      alert('You must activate a VIP first.');
       return;
     }
     
@@ -115,18 +115,18 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
 
   const confirmInvestment = async () => {
     if (!investAmount || !selectedPackage || !currentUser) {
-      setError('Informations manquantes');
+      alert('Informations manquantes');
       return;
     }
 
     const amount = parseFloat(investAmount);
     if (amount < selectedPackage.min_amount) {
-      setError(`Montant minimum: ${selectedPackage.min_amount.toLocaleString()} FCFA`);
+      alert(`Montant minimum: ${selectedPackage.min_amount.toLocaleString()} FCFA`);
       return;
     }
 
     if (selectedPackage.type === 'vip' && amount > selectedPackage.max_amount) {
-      setError(`Montant maximum: ${selectedPackage.max_amount.toLocaleString()} FCFA`);
+      alert(`Montant maximum: ${selectedPackage.max_amount.toLocaleString()} FCFA`);
       return;
     }
 
@@ -143,12 +143,11 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
     // Vérifier le solde disponible total (dépôt + commissions + bonus)
     const totalAvailableBalance = (currentUser?.balance_deposit || 0) + (currentUser?.balance_withdrawal || 0);
     if (amount > totalAvailableBalance) {
-      setError('Solde insuffisant');
+      alert('Solde disponible insuffisant');
       return;
     }
 
     setIsLoading(true);
-    setError('');
 
     try {
       let result;
@@ -187,11 +186,11 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
           console.log('✅ VIP ajouté localement - Staking maintenant disponible');
         }
       } else {
-        setError(result.error || 'Erreur lors de l\'investissement');
+        alert(result.error || 'Erreur lors de l\'investissement');
         console.error('❌ Erreur investissement:', result.error);
       }
     } catch (error: any) {
-      setError(error.message || 'Erreur lors de l\'investissement');
+      alert(error.message || 'Erreur lors de l\'investissement');
       console.error('❌ Exception investissement:', error);
     } finally {
       setIsLoading(false);
@@ -240,7 +239,6 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
-    setError(''); // Clear any previous errors
   };
 
   const filters = [
@@ -329,12 +327,6 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
 
               {/* Content */}
               <div className="p-1 xxs:p-2 xs:p-3 sm:p-4 space-y-2 xxs:space-y-3 xs:space-y-4 pb-24 texte-xs mb-28">
-                {error && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                    <p className="text-red-600 text-sm font-medium">{error}</p>
-                  </div>
-                )}
-
                 {activeTab === 'vip' && vipPackages.map((vip, index) => (
                   <div key={vip.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 xxs:p-3 xs:p-4 animate-fadeInUp" style={{ animationDelay: `${index * 100}ms` }}>
                     <div className="flex items-start space-x-2 xxs:space-x-3 xs:space-x-4">
