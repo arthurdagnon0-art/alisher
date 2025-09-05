@@ -90,7 +90,7 @@ export class InvestmentService {
       });
 
       // Calculer le solde disponible = balance_deposit + balance_withdrawal (commissions + bonus)
-      const availableBalance = (Number(user.balance_deposit) || 0) + (Number(user.balance_withdrawal) || 0);
+      const availableBalance = (Number(user.balance_deposit) || 0);
       const investmentAmount = Number(amount);
 
       if (availableBalance < investmentAmount) {
