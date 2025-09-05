@@ -366,7 +366,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
               </div>
             </div>
           </div>
-        <p className="text-2xl font-bold">FCFA{user?.balance_withdrawal?.toLocaleString() || '0'}</p>
+        </div>
       )}
     </div>
   );
