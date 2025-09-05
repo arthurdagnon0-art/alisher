@@ -137,7 +137,7 @@ export const InvitePage: React.FC<InvitePageProps> = ({ user, onBack }) => {
             <div className="flex items-center justify-between mb-2">
               <span className="font-gothic-italic">Niveau 2</span>
               <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                <span className="text-xs">✈️</span>
+                <span className="text-xs"><img src='https://i.postimg.cc/RhMKRykp/lv2.png' width={30} /></span>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-4 text-center">
