@@ -100,7 +100,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
   };
 
   const confirmInvestment = async () => {
-    if (!investAmount || !selectedPackage || !user) {
+    if (!investAmount || !selectedPackage || !currentUser) {
       setError('Informations manquantes');
       return;
     }
@@ -115,6 +115,14 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
       setError(`Montant maximum: ${selectedPackage.max_amount.toLocaleString()} FCFA`);
       return;
     }
+
+    // Debug: Afficher les valeurs pour diagnostic
+    console.log('💰 Vérification investissement:', {
+      amount,
+      currentUserBalance: currentUser?.balance_deposit,
+      selectedPackage: selectedPackage.name,
+      type: selectedPackage.type
+    });
 
     if (amount > (currentUser?.balance_deposit || 0)) {
       setError('Solde insuffisant');
@@ -136,15 +144,18 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
         alert(`Investissement ${selectedPackage.type.toUpperCase()} créé avec succès !`);
         setShowInvestModal(false);
         setInvestAmount('');
+        setSelectedPackage(null);
         // Actualiser les données utilisateur
         loadUserInvestments();
         // Recharger les données utilisateur depuis la base
         await refreshUserData();
       } else {
         setError(result.error || 'Erreur lors de l\'investissement');
+        console.error('❌ Erreur investissement:', result.error);
       }
     } catch (error: any) {
       setError(error.message || 'Erreur lors de l\'investissement');
+      console.error('❌ Exception investissement:', error);
     } finally {
       setIsLoading(false);
     }
