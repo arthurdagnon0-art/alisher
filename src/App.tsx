@@ -111,8 +111,13 @@ function App() {
         .single();
 
       if (!error && updatedUser) {
-        const formattedUser = {
-          id: updatedUser.id,
+        // Récupérer les commissions pour calculer le solde disponible
+        const { data: commissions } = await supabase
+          .from('referral_bonuses')
+          .select('amount')
+          .eq('referrer_id', updatedUser.id);
+
+        const totalCommission = commissions?.reduce((sum, c) => sum + c.amount, 0) || 0;
           phone: updatedUser.phone,
           email: updatedUser.email,
           name: updatedUser.name,
@@ -121,6 +126,7 @@ function App() {
           balance_deposit: updatedUser.balance_deposit || 0,
           balance_withdrawal: updatedUser.balance_withdrawal || 0,
           total_invested: updatedUser.total_invested || 0,
+          total_earned: updatedUser.total_earned || 0,
           total_earned: updatedUser.total_earned || 0,
           referral_code: updatedUser.referral_code,
           referred_by: updatedUser.referred_by,
@@ -136,8 +142,7 @@ function App() {
     } catch (error) {
       console.error('Erreur lors du rafraîchissement global:', error);
     }
-  };
-
+          balance_withdrawal: totalCommission, // Commissions + bonus uniquement
   if (!isAuthenticated) {
     if (showSetupAccount) {
       return (

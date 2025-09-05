@@ -309,7 +309,6 @@ export class TransactionService {
           .from('users')
           .update({
             balance_withdrawal: (user.balance_withdrawal || 0) + refundAmount,
-            total_earned: (user.total_earned || 0), // Maintenir total_earned
             updated_at: new Date().toISOString()
           })
           .eq('id', transaction.user_id);
