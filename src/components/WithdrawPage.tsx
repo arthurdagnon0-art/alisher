@@ -61,7 +61,8 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
     }
 
     let withdrawAmount = parseFloat(amount);
-    let finalAmount = withdrawAmount;
+    let finalAmount = withdrawAmount; // Montant en FCFA pour la base de données
+    let originalAmount = withdrawAmount; // Montant original saisi par l'utilisateur
     
     // Conversion USDT vers FCFA si nécessaire
     if (payType === 'USDT') {
@@ -71,11 +72,13 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
       }
       // Convertir USDT en FCFA pour la vérification du solde
       finalAmount = withdrawAmount * platformSettings.usdt_exchange_rate;
+      originalAmount = withdrawAmount; // Garder le montant USDT original
     } else {
       if (withdrawAmount < platformSettings.min_withdrawal) {
         setError(`Montant minimum: ${platformSettings.min_withdrawal.toLocaleString()} FCFA`);
         return;
       }
+      originalAmount = withdrawAmount; // Montant FCFA
     }
 
     const fees = (finalAmount * platformSettings.withdrawal_fee_rate) / 100;
@@ -136,13 +139,13 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
   const handleLinkWallet = () => {
     setShowSystemAlert(false);
     // Rediriger vers la page de carte bancaire
-    window.location.hash = '#bankcard';
+    window.dispatchEvent(new CustomEvent('navigate', { detail: 'bankcard' }));
     onBack();
   };
 
   const handleHistoryClick = () => {
     // Rediriger vers les détails du solde
-    window.location.hash = '#balance-details';
+    window.dispatchEvent(new CustomEvent('navigate', { detail: 'balance-details' }));
     onBack();
   };
 

@@ -2,8 +2,8 @@ import { supabase } from '../lib/supabase';
 import { Transaction } from '../types';
 
 export class TransactionService {
-  // Créer une demande de dépôt
-  static async createDeposit(userId: string, amount: number, method: string, reference?: string) {
+  // Créer une demande de dépôt avec conversion USDT
+  static async createDeposit(userId: string, amount: number, method: string, reference?: string, originalAmount?: number, currency?: string) {
     try {
       // Vérifier les paramètres de la plateforme
       const { data: minDepositSetting } = await supabase
@@ -14,20 +14,30 @@ export class TransactionService {
 
       const minDeposit = minDepositSetting?.value || 3000;
 
-      if (amount < minDeposit) {
-        throw new Error(`Montant minimum de dépôt: ${minDeposit} FCFA`);
+      // Pour USDT, vérifier le minimum en USDT puis convertir
+      if (currency === 'USDT') {
+        const minUsdtDeposit = 5; // Minimum USDT
+        if ((originalAmount || 0) < minUsdtDeposit) {
+          throw new Error(`Montant minimum de dépôt: ${minUsdtDeposit} USDT`);
+        }
+        // Le montant est déjà converti en FCFA
+      } else {
+        if (amount < minDeposit) {
+          throw new Error(`Montant minimum de dépôt: ${minDeposit} FCFA`);
+        }
       }
 
-      // Créer la transaction
+      // Créer la transaction avec les détails de conversion
       const { data: transaction, error } = await supabase
         .from('transactions')
         .insert({
           user_id: userId,
           type: 'deposit',
           method,
-          amount,
+          amount, // Montant en FCFA
           status: 'pending',
-          reference: reference || `DEP-${Date.now()}`
+          reference: reference || `DEP-${Date.now()}`,
+          admin_notes: currency === 'USDT' ? `Montant original: ${originalAmount} USDT (converti à ${amount} FCFA)` : null
         })
         .select()
         .single();
@@ -47,13 +57,16 @@ export class TransactionService {
     }
   }
 
-  // Créer une demande de retrait
-  static async createWithdrawal(userId: string, amount: number, method: string, transactionPassword: string, originalAmount?: number) {
+  // Créer une demande de retrait avec débit immédiat
+  static async createWithdrawal(userId: string, amount: number, method: string, transactionPassword: string, originalAmount?: number, currency?: string) {
     try {
-      // Récupérer l'utilisateur
+      // Récupérer l'utilisateur et sa carte bancaire
       const { data: user, error: userError } = await supabase
         .from('users')
-        .select('balance_withdrawal')
+        .select(`
+          balance_withdrawal,
+          bank_cards(id, wallet_type, card_holder_name, card_number)
+        `)
         .eq('id', userId)
         .single();
 
@@ -61,21 +74,32 @@ export class TransactionService {
         throw new Error('Utilisateur non trouvé');
       }
 
-      const minWithdrawal = 1000;
+      // Vérifier qu'une carte bancaire est configurée
+      if (!user.bank_cards || user.bank_cards.length === 0) {
+        throw new Error('Aucune carte bancaire configurée. Veuillez d\'abord ajouter vos informations bancaires.');
+      }
+
+      const minWithdrawal = currency === 'USDT' ? 8 : 1000; // 8 USDT ou 1000 FCFA
       const feeRate = 10;
 
       // Vérifier le montant minimum
-      if (amount < minWithdrawal) {
-        throw new Error(`Montant minimum de retrait: ${minWithdrawal} FCFA`);
+      if (currency === 'USDT') {
+        if ((originalAmount || 0) < minWithdrawal) {
+          throw new Error(`Montant minimum de retrait: ${minWithdrawal} USDT`);
+        }
+      } else {
+        if (amount < minWithdrawal) {
+          throw new Error(`Montant minimum de retrait: ${minWithdrawal} FCFA`);
+        }
       }
 
-      // Calculer les frais
+      // Calculer les frais (toujours en FCFA)
       const fees = (amount * feeRate) / 100;
       const totalAmount = amount + fees;
 
-      // Vérifier le solde
+      // Vérifier le solde (en FCFA)
       if (user.balance_withdrawal < totalAmount) {
-        throw new Error('Solde insuffisant (frais inclus)');
+        throw new Error(`Solde insuffisant. Requis: ${totalAmount.toLocaleString()} FCFA (frais inclus)`);
       }
 
       // Créer la transaction
@@ -85,11 +109,11 @@ export class TransactionService {
           user_id: userId,
           type: 'withdrawal',
           method,
-          amount,
+          amount, // Montant en FCFA
           fees,
           status: 'pending',
           reference: `WTH-${Date.now()}`,
-          admin_notes: originalAmount ? `Montant original: ${originalAmount} ${method.toUpperCase()}` : null
+          admin_notes: currency === 'USDT' ? `Montant original: ${originalAmount} USDT (converti à ${amount} FCFA)` : null
         })
         .select()
         .single();
@@ -97,7 +121,7 @@ export class TransactionService {
       if (error) throw error;
 
       // Déduire immédiatement du solde (sera restauré si rejeté)
-      await supabase
+      const { error: updateError } = await supabase
         .from('users')
         .update({
           balance_withdrawal: user.balance_withdrawal - totalAmount,
@@ -105,12 +129,14 @@ export class TransactionService {
         })
         .eq('id', userId);
 
-      console.log(`💰 Retrait créé: ${amount} FCFA débité du solde utilisateur ${userId}`);
+      if (updateError) throw updateError;
+
+      console.log(`💰 Retrait créé: ${totalAmount} FCFA débité du solde utilisateur ${userId}`);
 
       return {
         success: true,
         data: transaction,
-        message: 'Demande de retrait créée avec succès'
+        message: `Demande de retrait créée avec succès ! ${currency === 'USDT' ? `${originalAmount} USDT` : `${amount.toLocaleString()} FCFA`} sera traité dans les heures ouvrables.`
       };
     } catch (error: any) {
       return {
@@ -120,7 +146,7 @@ export class TransactionService {
     }
   }
 
-  // Récupérer les transactions d'un utilisateur
+  // Récupérer les transactions d'un utilisateur avec les cartes bancaires
   static async getUserTransactions(userId: string, type?: string, limit = 50) {
     try {
       console.log('🔍 Chargement des transactions pour utilisateur:', userId, 'type:', type);
@@ -129,7 +155,9 @@ export class TransactionService {
         .from('transactions')
         .select(`
           *,
-          bank_cards(wallet_type, card_holder_name, card_number)
+          users!inner(
+            bank_cards(wallet_type, card_holder_name, card_number)
+          )
         `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
@@ -272,6 +300,43 @@ export class TransactionService {
       return {
         success: false,
         error: error.message || 'Erreur lors du rejet'
+      };
+    }
+  }
+
+  // Récupérer les transactions en attente pour l'admin avec cartes bancaires
+  static async getPendingTransactions(type?: 'deposit' | 'withdrawal') {
+    try {
+      let query = supabase
+        .from('transactions')
+        .select(`
+          *,
+          users!inner(
+            name, 
+            phone,
+            bank_cards(wallet_type, card_holder_name, card_number)
+          )
+        `)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: true });
+
+      if (type) {
+        query = query.eq('type', type);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      return {
+        success: true,
+        data: data || [],
+        message: 'Transactions en attente récupérées avec succès'
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Erreur lors de la récupération des transactions'
       };
     }
   }
