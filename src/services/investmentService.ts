@@ -73,7 +73,7 @@ export class InvestmentService {
       // Vérifier le solde utilisateur
       const { data: user, error: userError } = await supabase
         .from('users')
-        .select('balance_deposit, total_invested')
+        .select('balance_deposit, total_invested, balance_withdrawal')
         .eq('id', userId)
         .single();
 
@@ -81,7 +81,19 @@ export class InvestmentService {
         throw new Error('Utilisateur non trouvé');
       }
 
-      if (user.balance_deposit < amount) {
+      console.log('💰 Vérification solde VIP:', {
+        userId,
+        amount,
+        balance_deposit: user.balance_deposit,
+        balance_withdrawal: user.balance_withdrawal,
+        total_invested: user.total_invested
+      });
+
+      // Convertir les valeurs en nombres pour éviter les problèmes de type
+      const balanceDeposit = Number(user.balance_deposit) || 0;
+      const investmentAmount = Number(amount);
+
+      if (balanceDeposit < investmentAmount) {
         throw new Error('Solde insuffisant');
       }
 
