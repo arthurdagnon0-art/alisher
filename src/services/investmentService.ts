@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { VIPPackage, StakingPlan, VIPInvestment, StakingInvestment } from '../types';
+import { BalanceUtils } from '../utils/balanceUtils';
 
 export class InvestmentService {
   // Récupérer tous les packages VIP actifs
@@ -86,11 +87,12 @@ export class InvestmentService {
         amount,
         balance_deposit: user.balance_deposit,
         balance_withdrawal: user.balance_withdrawal,
+        totalAvailable: BalanceUtils.getTotalAvailableBalance(user),
         total_invested: user.total_invested
       });
 
-      // Le solde disponible pour investissement = balance_deposit (solde de recharge)
-      const availableBalance = Number(user.balance_deposit) || 0;
+      // Le solde disponible pour investissement = balance_deposit + balance_withdrawal (solde total)
+      const availableBalance = BalanceUtils.getTotalAvailableBalance(user);
       const investmentAmount = Number(amount);
 
       if (availableBalance < investmentAmount) {
@@ -115,14 +117,29 @@ export class InvestmentService {
 
       if (investmentError) throw investmentError;
 
-      // Déduire le montant du solde et mettre à jour total_invested
-      // Déduire uniquement du balance_deposit (solde de recharge)
-      const newBalanceDeposit = availableBalance - investmentAmount;
+      // Déduire intelligemment du solde total
+      // Priorité: balance_withdrawal puis balance_deposit
+      const balanceWithdrawal = Number(user.balance_withdrawal) || 0;
+      const balanceDeposit = Number(user.balance_deposit) || 0;
+      
+      let newBalanceWithdrawal = balanceWithdrawal;
+      let newBalanceDeposit = balanceDeposit;
+      
+      if (balanceWithdrawal >= investmentAmount) {
+        // Déduire uniquement du balance_withdrawal
+        newBalanceWithdrawal = balanceWithdrawal - investmentAmount;
+      } else {
+        // Déduire tout le balance_withdrawal et le reste du balance_deposit
+        const remaining = investmentAmount - balanceWithdrawal;
+        newBalanceWithdrawal = 0;
+        newBalanceDeposit = balanceDeposit - remaining;
+      }
       
       const { error: updateError } = await supabase
         .from('users')
         .update({
           balance_deposit: newBalanceDeposit,
+          balance_withdrawal: newBalanceWithdrawal,
           total_invested: (Number(user.total_invested) || 0) + investmentAmount,
           updated_at: new Date().toISOString()
         })
@@ -178,7 +195,7 @@ export class InvestmentService {
       // Vérifier le solde utilisateur
       const { data: user, error: userError } = await supabase
         .from('users')
-        .select('balance_withdrawal, total_invested')
+        .select('balance_deposit, balance_withdrawal, total_invested')
         .eq('id', userId)
         .single();
 
@@ -186,8 +203,8 @@ export class InvestmentService {
         throw new Error('Utilisateur non trouvé');
       }
 
-      // Le solde disponible pour staking = balance_withdrawal (commissions + bonus + revenus)
-      const availableBalance = Number(user.balance_withdrawal) || 0;
+      // Le solde disponible pour staking = balance_deposit + balance_withdrawal (solde total)
+      const availableBalance = BalanceUtils.getTotalAvailableBalance(user);
       
       if (availableBalance < amount) {
         throw new Error('Solde insuffisant');
@@ -214,12 +231,28 @@ export class InvestmentService {
 
       if (investmentError) throw investmentError;
 
-      // Déduire le montant du solde et mettre à jour total_invested
-      const newBalanceWithdrawal = availableBalance - amount;
+      // Déduire intelligemment du solde total
+      // Priorité: balance_withdrawal puis balance_deposit
+      const balanceWithdrawal = Number(user.balance_withdrawal) || 0;
+      const balanceDeposit = Number(user.balance_deposit) || 0;
+      
+      let newBalanceWithdrawal = balanceWithdrawal;
+      let newBalanceDeposit = balanceDeposit;
+      
+      if (balanceWithdrawal >= amount) {
+        // Déduire uniquement du balance_withdrawal
+        newBalanceWithdrawal = balanceWithdrawal - amount;
+      } else {
+        // Déduire tout le balance_withdrawal et le reste du balance_deposit
+        const remaining = amount - balanceWithdrawal;
+        newBalanceWithdrawal = 0;
+        newBalanceDeposit = balanceDeposit - remaining;
+      }
       
       const { error: updateError } = await supabase
         .from('users')
         .update({
+          balance_deposit: newBalanceDeposit,
           balance_withdrawal: newBalanceWithdrawal,
           total_invested: (Number(user.total_invested) || 0) + amount,
           updated_at: new Date().toISOString()
@@ -366,8 +399,11 @@ export class InvestmentService {
     await supabase
       .from('users')
       .update({
-        balance_withdrawal: supabase.sql`COALESCE(balance_withdrawal, 0) + ${bonusAmount}`,
-        total_earned: supabase.sql`COALESCE(total_earned, 0) + ${bonusAmount}`,
+        balance_withdrawal: supabase.rpc('increment_balance', {
+          user_id: referrerId,
+          amount: bonusAmount,
+          balance_type: 'withdrawal'
+        }),
         updated_at: new Date().toISOString()
       })
       .eq('id', referrerId);

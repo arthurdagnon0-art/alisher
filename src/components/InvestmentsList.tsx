@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { Zap, ArrowLeft, Crown } from 'lucide-react';
 import { InvestmentService } from '../services/investmentService';
 import { supabase } from '../lib/supabase';
+import { BalanceUtils } from '../utils/balanceUtils';
 
 interface InvestmentsListProps {
   onBack?: () => void;
@@ -659,14 +660,14 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                   <p className="text-gray-700">
                     <strong>Solde disponible:</strong> 
                     <span className={`ml-2 font-bold ${
-                     (currentUser?.balance_withdrawal || 0) >= (parseFloat(investAmount) || selectedPackage?.min_amount || 0)
+                     BalanceUtils.getTotalAvailableBalance(currentUser) >= (parseFloat(investAmount) || selectedPackage?.min_amount || 0)
                         ? 'text-green-600' 
                         : 'text-red-600'
                     }`}>
-                     FCFA{formatAmount(currentUser?.balance_withdrawal || 0)}
+                     FCFA{BalanceUtils.formatBalance(BalanceUtils.getTotalAvailableBalance(currentUser))}
                     </span>
                   </p>
-                  {(currentUser?.balance_withdrawal || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0) && (
+                  {!BalanceUtils.hasSufficientBalance(currentUser, parseFloat(investAmount) || selectedPackage?.min_amount || 0) && (
                     <p className="text-red-600 text-[10px] xxs:text-xs mt-1">⚠️ Solde insuffisant</p>
                   )}
                 </div>
@@ -677,7 +678,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
             <div className="p-4 xxs:p-5 xs:p-6 border-t border-gray-100 bg-gray-50">
               <button
                 onClick={confirmInvestment}
-                disabled={isLoading || (currentUser?.balance_withdrawal || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0)}
+                disabled={isLoading || !BalanceUtils.hasSufficientBalance(currentUser, parseFloat(investAmount) || selectedPackage?.min_amount || 0)}
                 className="w-full bg-blue-600 text-white py-3 xxs:py-4 rounded-xl font-bold text-base xxs:text-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none mb-3"
               >
                 {isLoading ? (
@@ -686,7 +687,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                     <span>Traitement...</span>
                   </div>
                 ) : (
-                  (currentUser?.balance_withdrawal || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0) ? 
+                  !BalanceUtils.hasSufficientBalance(currentUser, parseFloat(investAmount) || selectedPackage?.min_amount || 0) ? 
                     'Solde disponible insuffisant' :
                     (selectedPackage?.type === 'vip' ? 'Investir Maintenant' : 'Staker Maintenant')
                 )}

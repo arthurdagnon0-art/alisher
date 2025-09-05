@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { Transaction } from '../types';
+import { BalanceUtils } from '../utils/balanceUtils';
 
 export class TransactionService {
   // Créer une demande de dépôt avec conversion USDT
@@ -80,6 +81,7 @@ export class TransactionService {
       const { data: user, error: userError } = await supabase
         .from('users')
         .select(`
+          balance_deposit,
           balance_withdrawal,
           bank_cards(id, wallet_type, card_holder_name, card_number)
         `)
@@ -113,20 +115,21 @@ export class TransactionService {
       const fees = (amount * feeRate) / 100;
       const totalAmount = amount + fees;
 
-      const withdrawableBalance = Number(user.balance_withdrawal) || 0;
+      const availableBalance = BalanceUtils.getTotalAvailableBalance(user);
       
       console.log('💰 Vérification solde backend:', {
         userId,
         amount,
         fees,
         totalAmount,
-        withdrawableBalance,
+        availableBalance,
+        userBalanceDeposit: user.balance_deposit,
         userBalanceWithdrawal: user.balance_withdrawal
       });
       
       // Vérifier le solde disponible (en FCFA)
-      if (withdrawableBalance < totalAmount) {
-        throw new Error(`Solde retirable insuffisant. Disponible: ${withdrawableBalance.toLocaleString()} FCFA, Requis: ${totalAmount.toLocaleString()} FCFA (frais inclus)`);
+      if (availableBalance < totalAmount) {
+        throw new Error(`Solde disponible insuffisant. Disponible: ${BalanceUtils.formatBalance(availableBalance)} FCFA, Requis: ${BalanceUtils.formatBalance(totalAmount)} FCFA (frais inclus)`);
       }
 
       // Créer la transaction
@@ -147,19 +150,29 @@ export class TransactionService {
 
       if (error) throw error;
 
-      // Déduire immédiatement du solde de retrait avec SQL pour éviter les problèmes de concurrence
-      const { data: currentUser, error: userError } = await supabase
-        .from('users')
-        .select('balance_withdrawal')
-        .eq('id', userId)
-        .single();
-
-      if (userError) throw userError;
-
+      // Déduire intelligemment du solde total
+      // Priorité: balance_withdrawal puis balance_deposit
+      const balanceWithdrawal = Number(user.balance_withdrawal) || 0;
+      const balanceDeposit = Number(user.balance_deposit) || 0;
+      
+      let newBalanceWithdrawal = balanceWithdrawal;
+      let newBalanceDeposit = balanceDeposit;
+      
+      if (balanceWithdrawal >= totalAmount) {
+        // Déduire uniquement du balance_withdrawal
+        newBalanceWithdrawal = balanceWithdrawal - totalAmount;
+      } else {
+        // Déduire tout le balance_withdrawal et le reste du balance_deposit
+        const remaining = totalAmount - balanceWithdrawal;
+        newBalanceWithdrawal = 0;
+        newBalanceDeposit = balanceDeposit - remaining;
+      }
+      
       const { error: updateError } = await supabase
         .from('users')
         .update({
-          balance_withdrawal: (currentUser.balance_withdrawal || 0) - totalAmount,
+          balance_deposit: newBalanceDeposit,
+          balance_withdrawal: newBalanceWithdrawal,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId);
@@ -310,15 +323,24 @@ export class TransactionService {
 
       // Si c'est un retrait rejeté, rembourser le solde
       if (transaction.type === 'withdrawal') {
+        // Rembourser au balance_withdrawal (plus simple pour les retraits)
+        const { data: currentUser, error: userError } = await supabase
+          .from('users')
+          .select('balance_withdrawal')
+          .eq('id', transaction.user_id)
+          .single();
+
+        if (userError) throw userError;
+
         const refundAmount = transaction.amount + (transaction.fees || 0);
         
-        // Rembourser au balance_withdrawal avec SQL pour éviter les problèmes de concurrence
         const { error: refundError } = await supabase
-          .rpc('increment_balance', {
-            user_id: transaction.user_id,
-            amount: refundAmount,
-            balance_type: 'withdrawal'
-          });
+          .from('users')
+          .update({
+            balance_withdrawal: (currentUser.balance_withdrawal || 0) + refundAmount,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', transaction.user_id);
 
         if (refundError) throw refundError;
 

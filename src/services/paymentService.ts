@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { PaymentMethod } from '../types';
+import { BalanceUtils } from '../utils/balanceUtils';
 
 export class PaymentService {
   // Récupérer toutes les méthodes de paiement actives
@@ -180,13 +181,22 @@ export class PaymentService {
 
       if (submissionUpdateError) throw submissionUpdateError;
 
-      // Créditer le solde de dépôt de l'utilisateur avec SQL pour éviter les problèmes de concurrence
+      // Créditer le solde de dépôt de l'utilisateur
+      const { data: currentUser, error: userError } = await supabase
+        .from('users')
+        .select('balance_deposit')
+        .eq('id', submission.user_id)
+        .single();
+
+      if (userError) throw userError;
+
       const { error: balanceError } = await supabase
-        .rpc('increment_balance', {
-          user_id: submission.user_id,
-          amount: submission.amount,
-          balance_type: 'deposit'
-        });
+        .from('users')
+        .update({
+          balance_deposit: (currentUser.balance_deposit || 0) + submission.amount,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', submission.user_id);
 
       if (balanceError) throw balanceError;
 
@@ -344,8 +354,11 @@ export class PaymentService {
     await supabase
       .from('users')
       .update({
-        balance_withdrawal: supabase.sql`COALESCE(balance_withdrawal, 0) + ${bonusAmount}`,
-        total_earned: supabase.sql`COALESCE(total_earned, 0) + ${bonusAmount}`,
+        balance_withdrawal: supabase.rpc('increment_balance', {
+          user_id: referrerId,
+          amount: bonusAmount,
+          balance_type: 'withdrawal'
+        }),
         updated_at: new Date().toISOString()
       })
       .eq('id', referrerId);

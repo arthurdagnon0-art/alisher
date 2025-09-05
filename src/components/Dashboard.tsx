@@ -7,6 +7,7 @@ import { LoadingSpinner } from './LoadingSpinner';
 import { TelegramPopup } from './TelegramPopup';
 import { platformSettings } from '../data/investments';
 import { supabase } from '../lib/supabase';
+import { BalanceUtils } from '../utils/balanceUtils';
 
 interface DashboardProps {
   user: any;
@@ -206,7 +207,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           <div className="text-center mb-3 xxs:mb-4">
             <p className="text-xs xxs:text-sm opacity-90 mb-1 xxs:mb-2">Solde Disponible</p>
             <p className="text-xl xxs:text-2xl xs:text-3xl font-bold">
-              FCFA{((currentUser?.balance_deposit || 0) + (currentUser?.balance_withdrawal || 0)).toLocaleString()}
+              FCFA{BalanceUtils.formatBalance(BalanceUtils.getTotalAvailableBalance(currentUser))}
             </p>
           </div>
         </AnimatedCard>
@@ -283,9 +284,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
             </div>
             <div className="text-center">
               <p className="text-xl font-bold text-orange-600">
-                {isLoadingCommission ? '...' : `FCFA${totalCommission.toLocaleString()}`}
+                FCFA{BalanceUtils.formatBalance(BalanceUtils.getTotalAvailableBalance(currentUser))}
               </p>
-              <p className="text-xs text-gray-600">Commission</p>
+              <p className="text-xs text-gray-600">Solde Total</p>
             </div>
           </div>
         </AnimatedCard>
