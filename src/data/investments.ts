@@ -125,7 +125,7 @@ export const platformSettings = {
   min_withdrawal: 1000,
   withdrawal_fee_rate: 10,
   usdt_exchange_rate: 600,
-  min_usdt_deposit: 5,
+  min_usdt_deposit: 5, 
   min_usdt_withdrawal: 8,
   withdrawal_hours: {
     start: 8,

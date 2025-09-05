@@ -48,7 +48,7 @@ export class TransactionService {
   }
 
   // Créer une demande de retrait
-  static async createWithdrawal(userId: string, amount: number, method: string, transactionPassword: string) {
+  static async createWithdrawal(userId: string, amount: number, method: string, transactionPassword: string, originalAmount?: number) {
     try {
       // Récupérer l'utilisateur
       const { data: user, error: userError } = await supabase
@@ -88,14 +88,15 @@ export class TransactionService {
           amount,
           fees,
           status: 'pending',
-          reference: `WTH-${Date.now()}`
+          reference: `WTH-${Date.now()}`,
+          admin_notes: originalAmount ? `Montant original: ${originalAmount} ${method.toUpperCase()}` : null
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      // Déduire temporairement du solde (sera restauré si rejeté)
+      // Déduire immédiatement du solde (sera restauré si rejeté)
       await supabase
         .from('users')
         .update({
@@ -103,6 +104,8 @@ export class TransactionService {
           updated_at: new Date().toISOString()
         })
         .eq('id', userId);
+
+      console.log(`💰 Retrait créé: ${amount} FCFA débité du solde utilisateur ${userId}`);
 
       return {
         success: true,
@@ -209,9 +212,21 @@ export class TransactionService {
     }
   }
 
-  // Rejeter une transaction (admin)
+  // Rejeter une transaction (admin) avec remboursement
   static async rejectTransaction(transactionId: string, adminNotes?: string) {
     try {
+      // Récupérer la transaction
+      const { data: transaction, error: transactionError } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('id', transactionId)
+        .single();
+
+      if (transactionError || !transaction) {
+        throw new Error('Transaction non trouvée');
+      }
+
+      // Rejeter la transaction
       const { error } = await supabase
         .from('transactions')
         .update({
@@ -222,6 +237,29 @@ export class TransactionService {
         .eq('id', transactionId);
 
       if (error) throw error;
+
+      // Si c'est un retrait rejeté, rembourser le solde
+      if (transaction.type === 'withdrawal') {
+        const { data: user, error: userError } = await supabase
+          .from('users')
+          .select('balance_withdrawal')
+          .eq('id', transaction.user_id)
+          .single();
+
+        if (userError) throw userError;
+
+        const refundAmount = transaction.amount + (transaction.fees || 0);
+        
+        await supabase
+          .from('users')
+          .update({
+            balance_withdrawal: (user.balance_withdrawal || 0) + refundAmount,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', transaction.user_id);
+
+        console.log(`💰 Retrait rejeté: ${refundAmount} FCFA remboursé à l'utilisateur ${transaction.user_id}`);
+      }
 
       return {
         success: true,

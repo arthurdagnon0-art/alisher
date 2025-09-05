@@ -49,6 +49,7 @@ export const AdminTransactions: React.FC<AdminTransactionsProps> = ({ onBack }) 
 
   const handleReject = async (transactionId: string) => {
     try {
+      const notes = prompt('Notes de rejet (optionnel):');
       const result = await TransactionService.rejectTransaction(transactionId);
       if (result.success) {
         alert('Transaction rejetée avec succès !');

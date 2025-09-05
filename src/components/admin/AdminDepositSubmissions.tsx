@@ -76,7 +76,7 @@ export const AdminDepositSubmissions: React.FC<AdminDepositSubmissionsProps> = (
     setIsProcessing(true);
     try {
       // Utiliser PaymentService pour rejeter le dépôt
-      const result = await PaymentService.rejectDeposit(selectedSubmission.id, adminNotes);
+      const result = await PaymentService.rejectDeposit(selectedSubmission.id, adminNotes || 'Rejeté par l\'administrateur');
       
       if (!result.success) {
         throw new Error(result.error);
