@@ -653,6 +653,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
               <button
                 onClick={confirmInvestment}
                 disabled={isLoading || (currentUser?.balance_withdrawal || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0)}
+                disabled={isLoading || (currentUser?.balance_deposit || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0)}
                 className="w-full bg-blue-600 text-white py-3 xxs:py-4 rounded-xl font-bold text-base xxs:text-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none mb-3"
               >
                 {isLoading ? (
@@ -661,8 +662,8 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                     <span>Traitement...</span>
                   </div>
                 ) : (
-                  (currentUser?.balance_withdrawal || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0) ? 
-                    'Solde insuffisant' :
+                  (currentUser?.balance_deposit || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0) ? 
+                    'Solde de dépôt insuffisant' :
                     (selectedPackage?.type === 'vip' ? 'Investir Maintenant' : 'Staker Maintenant')
                 )}
               </button>
