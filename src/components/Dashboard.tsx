@@ -192,7 +192,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           <div className="text-center mb-3 xxs:mb-4">
             <p className="text-xs xxs:text-sm opacity-90 mb-1 xxs:mb-2">Solde Disponible</p>
             <p className="text-xl xxs:text-2xl xs:text-3xl font-bold">
-              FCFA{((currentUser?.balance_deposit || 0) + totalCommission).toLocaleString()}
+              FCFA{(currentUser?.balance_withdrawal || 0).toLocaleString()}
             </p>
           </div>
           
@@ -202,8 +202,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
               <p className="text-base xxs:text-lg xs:text-xl font-bold">FCFA{currentUser?.balance_deposit?.toLocaleString() || '0'}</p>
             </div>
             <div className="text-center">
-              <p className="text-xs xxs:text-sm opacity-90 mb-1">Commissions + Bonus</p>
-              <p className="text-base xxs:text-lg xs:text-xl font-bold">FCFA{totalCommission.toLocaleString()}</p>
+              <p className="text-xs xxs:text-sm opacity-90 mb-1">Solde Retirable</p>
+              <p className="text-base xxs:text-lg xs:text-xl font-bold">FCFA{(currentUser?.balance_withdrawal || 0).toLocaleString()}</p>
             </div>
           </div>
         </AnimatedCard>

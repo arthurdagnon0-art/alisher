@@ -100,11 +100,11 @@ export class TransactionService {
       const totalAmount = amount + fees;
 
       // Calculer le solde disponible = balance_deposit + balance_withdrawal
-      const availableBalance = (user.balance_deposit || 0) + (user.balance_withdrawal || 0);
+      const withdrawableBalance = user.balance_withdrawal || 0;
       
       // Vérifier le solde disponible (en FCFA)
-      if (availableBalance < totalAmount) {
-        throw new Error(`Solde insuffisant. Requis: ${totalAmount.toLocaleString()} FCFA (frais inclus)`);
+      if (withdrawableBalance < totalAmount) {
+        throw new Error(`Solde retirable insuffisant. Disponible: ${withdrawableBalance.toLocaleString()} FCFA, Requis: ${totalAmount.toLocaleString()} FCFA (frais inclus)`);
       }
 
       // Créer la transaction
@@ -126,27 +126,13 @@ export class TransactionService {
       if (error) throw error;
 
       // Déduire du solde disponible (d'abord balance_withdrawal, puis balance_deposit si nécessaire)
-      const balanceWithdrawal = user.balance_withdrawal || 0;
-      const balanceDeposit = user.balance_deposit || 0;
-      
-      let newBalanceWithdrawal = balanceWithdrawal;
-      let newBalanceDeposit = balanceDeposit;
-      
-      if (totalAmount <= balanceWithdrawal) {
-        // Déduire entièrement du balance_withdrawal
-        newBalanceWithdrawal = balanceWithdrawal - totalAmount;
-      } else {
-        // Déduire tout le balance_withdrawal et le reste du balance_deposit
-        const remaining = totalAmount - balanceWithdrawal;
-        newBalanceWithdrawal = 0;
-        newBalanceDeposit = balanceDeposit - remaining;
-      }
+      // Déduire uniquement du balance_withdrawal (commissions + bonus)
+      const newBalanceWithdrawal = (user.balance_withdrawal || 0) - totalAmount;
       
       const { error: updateError } = await supabase
         .from('users')
         .update({
           balance_withdrawal: newBalanceWithdrawal,
-          balance_deposit: newBalanceDeposit,
           total_earned: (user.total_earned || 0), // Maintenir total_earned
           updated_at: new Date().toISOString()
         })
