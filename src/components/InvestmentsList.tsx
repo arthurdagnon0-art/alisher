@@ -34,6 +34,13 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
     loadCurrentUser();
   }, []);
 
+  // Recharger les investissements quand currentUser change
+  useEffect(() => {
+    if (currentUser?.id) {
+      loadUserInvestments();
+    }
+  }, [currentUser?.id]);</parameter>
+
   const loadCurrentUser = () => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
@@ -75,6 +82,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
       const result = await InvestmentService.getUserInvestments(user.id);
       if (result.success) {
         setUserInvestments(result.data);
+        console.log('📊 Investissements chargés:', result.data);
       }
     } catch (error) {
       console.error('Erreur lors du chargement des investissements utilisateur:', error);
@@ -82,7 +90,12 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
   };
 
   const hasActiveVIP = () => {
-    return userInvestments.vip.some((investment: any) => investment.status === 'active');
+    const hasVIP = userInvestments.vip.some((investment: any) => investment.status === 'active');
+    console.log('🔍 Vérification VIP actif:', { 
+      vipInvestments: userInvestments.vip, 
+      hasActiveVIP: hasVIP 
+    });
+    return hasVIP;
   };
 
   const formatAmount = (amount: number) => {
@@ -147,9 +160,10 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
         setInvestAmount('');
         setSelectedPackage(null);
         // Actualiser les données utilisateur
-        loadUserInvestments();
         // Recharger les données utilisateur depuis la base
         await refreshUserData();
+        // Recharger les investissements après mise à jour
+        await loadUserInvestments();
       } else {
         setError(result.error || 'Erreur lors de l\'investissement');
         console.error('❌ Erreur investissement:', result.error);
