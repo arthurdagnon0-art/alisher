@@ -133,12 +133,16 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
     // Debug: Afficher les valeurs pour diagnostic
     console.log('💰 Vérification investissement:', {
       amount,
-      currentUserBalance: currentUser?.balance_withdrawal,
+      currentUserBalanceDeposit: currentUser?.balance_deposit,
+      currentUserBalanceWithdrawal: currentUser?.balance_withdrawal,
+      totalAvailableBalance: (currentUser?.balance_deposit || 0) + (currentUser?.balance_withdrawal || 0),
       selectedPackage: selectedPackage.name,
       type: selectedPackage.type
     });
 
-    if (amount > (currentUser?.balance_withdrawal || 0)) {
+    // Vérifier le solde disponible total (dépôt + commissions + bonus)
+    const totalAvailableBalance = (currentUser?.balance_deposit || 0) + (currentUser?.balance_withdrawal || 0);
+    if (amount > totalAvailableBalance) {
       setError('Solde insuffisant');
       return;
     }
@@ -637,14 +641,14 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                   <p className="text-gray-700">
                     <strong>Solde disponible:</strong> 
                     <span className={`ml-2 font-bold ${
-                     (currentUser?.balance_withdrawal || 0) >= (parseFloat(investAmount) || selectedPackage?.min_amount || 0)
+                     ((currentUser?.balance_deposit || 0) + (currentUser?.balance_withdrawal || 0)) >= (parseFloat(investAmount) || selectedPackage?.min_amount || 0)
                         ? 'text-green-600' 
                         : 'text-red-600'
                     }`}>
-                     FCFA{formatAmount(currentUser?.balance_withdrawal || 0)}
+                     FCFA{formatAmount((currentUser?.balance_deposit || 0) + (currentUser?.balance_withdrawal || 0))}
                     </span>
                   </p>
-                  {(currentUser?.balance_withdrawal || 0) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0) && (
+                  {((currentUser?.balance_deposit || 0) + (currentUser?.balance_withdrawal || 0)) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0) && (
                     <p className="text-red-600 text-[10px] xxs:text-xs mt-1">⚠️ Solde insuffisant</p>
                   )}
                 </div>
@@ -665,7 +669,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                   </div>
                 ) : (
                   ((currentUser?.balance_deposit || 0) + (currentUser?.balance_withdrawal || 0)) < (parseFloat(investAmount) || selectedPackage?.min_amount || 0) ? 
-                    'Solde de dépôt insuffisant' :
+                    'Solde disponible insuffisant' :
                     (selectedPackage?.type === 'vip' ? 'Investir Maintenant' : 'Staker Maintenant')
                 )}
               </button>
