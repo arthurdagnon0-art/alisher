@@ -260,7 +260,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
         
         <div className="mt-4">
           <p className="text-sm opacity-90">Solde Disponible</p>
-          <p className="text-2xl font-bold">FCFA{getWithdrawableBalance(currentUser).toLocaleString()}</p>
+          <p className="text-2xl font-bold">FCFA{((currentUser?.balance_deposit || 0) + (currentUser?.balance_withdrawal || 0)).toLocaleString()}</p>
         </div>
       </div>
 
