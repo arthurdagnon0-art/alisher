@@ -137,8 +137,8 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
   };
 
   const filters = [
-    { id: 'VIPs', label: 'VIPs', icon: '📊', src: 'https://i.postimg.cc/SKC9pmqt/vip-icon-1.png' },
-    { id: 'STAKINGS', label: 'STAKINGS', icon: '📈', src: 'https://i.postimg.cc/sDH7YnwK/invest-active.png' }
+    { id: 'VIPs', label: 'VIPs', icon: '📊', src: 'https://i.postimg.cc/SKC9pmqt/vip-icon-1.png', vip:'vip' },
+    { id: 'STAKINGS', label: 'STAKINGS', icon: '📈', src: 'https://i.postimg.cc/sDH7YnwK/invest-active.png', vip:'staking' }
 
   ];
 
@@ -174,7 +174,7 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
             {filters.map((filter) => (
               <button
                 key={filter.id}
-                onClick={() => setSelectedFilter(filter.id)}
+                onClick={() => handleTabChange(filter.vip)}
                 className={`w-full p-1 xxs:p-2 xs:p-3 mb-1 xxs:mb-2 flex flex-col items-center text-[7px] xxs:text-[8px] xs:text-[10px] sm:text-xs transition-all duration-300 ${
                   selectedFilter === filter.id
                     ? 'bg-blue-100 text-blue-600 border-r-2 border-blue-600'
