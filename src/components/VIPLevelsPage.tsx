@@ -9,11 +9,11 @@ export const VIPLevelsPage: React.FC<VIPLevelsPageProps> = ({ onBack }) => {
   const vipLevels = [
     
     { level: 'V1', amount: '3000.00',amount_final:'70000.00', bgColor: 'bg-blue-200', textColor: 'text-blue-600', src:'https://i.postimg.cc/mgZdx1ZS/icon-1.png' },
-    { level: 'V2', amount: '35000.00', bgColor: 'bg-blue-200', textColor: 'text-blue-600', src:'https://i.postimg.cc/nLC0r8Dj/icon-2.png' },
-    { level: 'V3', amount: '150000.00', bgColor: 'bg-yellow-200', textColor: 'text-yellow-700', src:'https://i.postimg.cc/RVLPbLmF/icon-3.png' },
-    { level: 'V4', amount: '450000.00', bgColor: 'bg-purple-200', textColor: 'text-purple-600', src:'https://i.postimg.cc/h4xZVq3V/icon-4.png' },
-    { level: 'V5', amount: '1500000.00', bgColor: 'bg-green-200', textColor: 'text-green-600', src:'https://i.postimg.cc/dtYHBSzp/icon-5.png' },
-    { level: 'V6', amount: '3500000.00', bgColor: 'bg-red-200', textColor: 'text-red-600', src:'https://i.postimg.cc/7hgB4gTK/icon-6.png' },
+    { level: 'V2', amount: '75000.00', bgColor: 'bg-blue-200', textColor: 'text-blue-600', src:'https://i.postimg.cc/nLC0r8Dj/icon-2.png' },
+    { level: 'V3', amount: '205000.00', bgColor: 'bg-yellow-200', textColor: 'text-yellow-700', src:'https://i.postimg.cc/RVLPbLmF/icon-3.png' },
+    { level: 'V4', amount: '505000.00', bgColor: 'bg-purple-200', textColor: 'text-purple-600', src:'https://i.postimg.cc/h4xZVq3V/icon-4.png' },
+    { level: 'V5', amount: '1005000.00', bgColor: 'bg-green-200', textColor: 'text-green-600', src:'https://i.postimg.cc/dtYHBSzp/icon-5.png' },
+    
   ];
 
   return (
