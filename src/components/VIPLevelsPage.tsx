@@ -50,7 +50,7 @@ export const VIPLevelsPage: React.FC<VIPLevelsPageProps> = ({ onBack }) => {
         {/* VIP Description */}
         <div className="flex-1">
           <p className="text-gray-800 text-lg leading-relaxed" style={{ fontFamily: 'Inter, system-ui, sans-serif', fontWeight: '400' }}>
-            Ce niveau de VIP nécessite un montant total d'investissement de{' '}
+            Ce niveau de VIP nécessite un montant minimum d'investissement de{' '}
             <span className={`text-3xl font-gothic-italic ${vip.textColor} tracking-tight`}>
               {/* Contenu du span manquant ici, à remplir selon le besoin */}
               {vip.amount} {/* Exemple si tu veux afficher un montant */}
