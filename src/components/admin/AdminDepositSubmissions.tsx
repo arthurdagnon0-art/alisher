@@ -28,8 +28,7 @@ export const AdminDepositSubmissions: React.FC<AdminDepositSubmissionsProps> = (
           *,
           users!inner(name, phone),
           payment_methods!inner(name, deposit_number, account_name),
-          transactions!inner(reference, created_at),
-          bank_cards(wallet_type, card_holder_name, card_number)
+          transactions!inner(reference, created_at)
         `)
         .eq('status', 'pending')
         .order('created_at', { ascending: true });
