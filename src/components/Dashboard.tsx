@@ -195,8 +195,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           
           <div className="grid grid-cols-2 gap-2 xxs:gap-3 xs:gap-4">
             <div className="text-center">
-              <p className="text-xs xxs:text-sm opacity-90 mb-1">Solde Dépôt</p>
-              <p className="text-base xxs:text-lg xs:text-xl font-bold">FCFA{currentUser?.balance_deposit?.toLocaleString() || '0'}</p>
+              <p className="text-xs xxs:text-sm opacity-90 mb-1">Total Investi</p>
+              <p className="text-base xxs:text-lg xs:text-xl font-bold">FCFA{currentUser?.total_invested?.toLocaleString() || '0'}</p>
             </div>
             <div className="text-center">
               <p className="text-xs xxs:text-sm opacity-90 mb-1">Solde Disponible</p>

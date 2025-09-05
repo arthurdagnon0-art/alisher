@@ -183,17 +183,17 @@ export class PaymentService {
       // Récupérer le solde actuel et le mettre à jour
       const { data: currentUser, error: getUserError } = await supabase
         .from('users')
-        .select('balance_deposit')
+        .select('balance_withdrawal')
         .eq('id', submission.user_id)
         .single();
 
       if (getUserError) throw getUserError;
 
-      // Créditer le solde utilisateur
+      // Créditer le solde disponible (withdrawal) de l'utilisateur
       const { error: balanceError } = await supabase
         .from('users')
         .update({
-          balance_deposit: (currentUser.balance_deposit || 0) + submission.amount,
+          balance_withdrawal: (currentUser.balance_withdrawal || 0) + submission.amount,
           updated_at: new Date().toISOString()
         })
         .eq('id', submission.user_id);

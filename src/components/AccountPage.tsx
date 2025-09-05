@@ -205,8 +205,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({ user, onLogout, onNavi
 
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="text-center transform hover:scale-105 transition-all duration-300">
-              <p className="text-sm text-gray-600 mb-1">Solde de Recharge</p>
-              <p className="text-xl font-bold text-blue-600 animate-pulse">FCFA{currentUser?.balance_deposit?.toLocaleString() || '0'}</p>
+              <p className="text-sm text-gray-600 mb-1">Total Investi</p>
+              <p className="text-xl font-bold text-blue-600 animate-pulse">FCFA{currentUser?.total_invested?.toLocaleString() || '0'}</p>
             </div>
             <div className="text-center transform hover:scale-105 transition-all duration-300">
               <p className="text-sm text-gray-600 mb-1">Solde Disponible</p>
