@@ -87,38 +87,6 @@ export const AccountPage: React.FC<AccountPageProps> = ({ user, onLogout, onNavi
       <div className="px-2 xxs:px-3 xs:px-4 mt-4">
         <VIPStatusCard user={currentUser} onNavigate={onNavigate} />
       </div>
-        
-          {/* Animated background particles */}
-          <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-            <div className="absolute top-2 left-4 w-2 h-2 bg-white bg-opacity-30 rounded-full animate-ping"></div>
-            <div className="absolute top-8 right-8 w-3 h-3 bg-yellow-300 bg-opacity-50 rounded-full animate-pulse delay-500"></div>
-            <div className="absolute bottom-4 left-8 w-1 h-1 bg-white bg-opacity-40 rounded-full animate-bounce delay-700"></div>
-          </div>
-          
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="flex items-center space-x-2 mb-2">
-                <span className="bg-white bg-opacity-20 px-2 py-1 rounded text-xs animate-pulse">VIP 0</span>
-              </div>
-            </div>
-            <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center animate-heartbeat shadow-lg">
-              <span className="text-yellow-900 font-gothic-italic text-lg">V0</span>
-            </div>
-          </div>
-          
-          {/* Progress Bar */}
-          <div className="relative cursor-pointer" onClick={() => onNavigate('vip')}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">NIVEAU VIP</span>
-              <img src={'https://i.postimg.cc/5tf1SFb3/lv0.png'} width={60}/>
-            </div>
-            <div className="w-full bg-white bg-opacity-70 rounded-full h-2 mb-2 hover:bg-opacity-40 transition-all duration-300">
-              <div className="bg-white h-2 rounded-full" style={{ width: '0%' }}></div>
-            </div>
-            <p className="text-sm opacity-90">Progression actuelle 0 / 2000.00</p>
-          </div>
-        </div>
-      </div>
 
       {/* Quick Actions */}
       <div className="px-2 xxs:px-3 xs:px-4 mt-4">
