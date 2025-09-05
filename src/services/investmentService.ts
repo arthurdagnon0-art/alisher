@@ -118,7 +118,7 @@ export class InvestmentService {
       // Déduire le montant du solde et mettre à jour total_invested
       // Déduire d'abord du balance_deposit, puis du balance_withdrawal si nécessaire
       const balanceDeposit = Number(user.balance_deposit) || 0;
-      const balanceWithdrawal = Number(user.balance_withdrawal) || 0;
+      const balanceWithdrawal = Number(user.balance_deposit) || 0;
       
       let newBalanceDeposit = balanceDeposit;
       let newBalanceWithdrawal = balanceWithdrawal;
