@@ -76,6 +76,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
         console.error('Erreur parsing user data:', error);
       }
     }
+  }, []);
 
   // Charger les commissions de parrainage
   const [totalCommission, setTotalCommission] = React.useState(0);
