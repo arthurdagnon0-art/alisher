@@ -31,8 +31,46 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
     if (user?.id) {
       loadUserInvestments();
     }
-    // Charger les données utilisateur à jour
-    loadCurrentUser();
+    
+    // Fonction pour charger les données utilisateur
+    const loadUserData = () => {
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        try {
+          const userData = JSON.parse(savedUser);
+          setCurrentUser(userData);
+          console.log('📈 [InvestmentsList] Données utilisateur chargées:', {
+            balance_deposit: userData.balance_deposit,
+            balance_withdrawal: userData.balance_withdrawal,
+            total_available: (userData.balance_deposit || 0) + (userData.balance_withdrawal || 0)
+          });
+        } catch (error) {
+          console.error('Erreur parsing user data:', error);
+        }
+      }
+    };
+    
+    // Charger initialement
+    loadUserData();
+    
+    // Écouter les mises à jour
+    const handleUserDataUpdate = (event: any) => {
+      console.log('📈 [InvestmentsList] Mise à jour reçue:', event.detail);
+      setCurrentUser(event.detail);
+    };
+    
+    const handleRefreshEvent = () => {
+      console.log('🔄 [InvestmentsList] Événement de rafraîchissement reçu');
+      loadUserData();
+    };
+    
+    window.addEventListener('userDataUpdated', handleUserDataUpdate);
+    window.addEventListener('refreshUserData', handleRefreshEvent);
+    
+    return () => {
+      window.removeEventListener('userDataUpdated', handleUserDataUpdate);
+      window.removeEventListener('refreshUserData', handleRefreshEvent);
+    };
   }, []);
 
   // Recharger les investissements quand currentUser change

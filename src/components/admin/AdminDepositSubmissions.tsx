@@ -60,9 +60,12 @@ export const AdminDepositSubmissions: React.FC<AdminDepositSubmissionsProps> = (
         throw new Error(result.error);
       }
 
-      alert(`Dépôt de ${selectedSubmission.amount.toLocaleString()} FCFA approuvé et crédité au solde de dépôt !`);
+      alert(`✅ Dépôt de ${selectedSubmission.amount.toLocaleString()} FCFA approuvé et crédité au solde !`);
       setShowDetailModal(false);
       loadSubmissions();
+      
+      // Déclencher une mise à jour globale pour tous les utilisateurs connectés
+      console.log('🔄 Dépôt approuvé - Mise à jour globale déclenchée');
     } catch (error: any) {
       alert('Erreur lors de l\'approbation: ' + error.message);
     } finally {

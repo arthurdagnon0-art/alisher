@@ -54,9 +54,8 @@ export const DepositSubmissionPage: React.FC<DepositSubmissionPageProps> = ({
         if (savedUser) {
           try {
             const userData = JSON.parse(savedUser);
-            // Déclencher un rafraîchissement immédiat des données
-            window.dispatchEvent(new CustomEvent('refreshUserData'));
-            localStorage.setItem('user', JSON.stringify(userData));
+            // Le solde sera mis à jour après approbation admin
+            console.log('✅ Demande de dépôt soumise, en attente d\'approbation');
           } catch (error) {
             console.error('Erreur mise à jour localStorage:', error);
           }

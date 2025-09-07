@@ -22,6 +22,51 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
 
   // Mettre à jour les données utilisateur depuis localStorage
   React.useEffect(() => {
+    // Fonction pour charger les données utilisateur
+    const loadUserData = () => {
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        try {
+          const userData = JSON.parse(savedUser);
+          setCurrentUser(userData);
+          console.log('📊 [Dashboard] Données utilisateur chargées:', {
+            balance_deposit: userData.balance_deposit,
+            balance_withdrawal: userData.balance_withdrawal,
+            total_available: (userData.balance_deposit || 0) + (userData.balance_withdrawal || 0)
+          });
+        } catch (error) {
+          console.error('Erreur parsing user data:', error);
+        }
+      }
+    };
+    
+    // Charger initialement
+    loadUserData();
+    
+    // Écouter les mises à jour
+    const handleUserDataUpdate = (event: any) => {
+      console.log('📊 [Dashboard] Mise à jour reçue:', event.detail);
+      setCurrentUser(event.detail);
+    };
+    
+    // Écouter les événements de rafraîchissement
+    const handleRefreshEvent = () => {
+      console.log('🔄 [Dashboard] Événement de rafraîchissement reçu');
+      loadUserData();
+      refreshUserData();
+    };
+    
+    window.addEventListener('userDataUpdated', handleUserDataUpdate);
+    window.addEventListener('refreshUserData', handleRefreshEvent);
+    
+    return () => {
+      window.removeEventListener('userDataUpdated', handleUserDataUpdate);
+      window.removeEventListener('refreshUserData', handleRefreshEvent);
+    };
+  }, []);
+
+  // Effet séparé pour les mises à jour automatiques
+  React.useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {
@@ -31,15 +76,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
         console.error('Erreur parsing user data:', error);
       }
     }
-    
-    // Écouter les mises à jour de données utilisateur
-    const handleUserDataUpdate = (event: any) => {
-      setCurrentUser(event.detail);
-    };
-    
-    window.addEventListener('userDataUpdated', handleUserDataUpdate);
-    return () => window.removeEventListener('userDataUpdated', handleUserDataUpdate);
-  }, []);
 
   // Charger les commissions de parrainage
   const [totalCommission, setTotalCommission] = React.useState(0);

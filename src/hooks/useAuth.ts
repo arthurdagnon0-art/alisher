@@ -34,7 +34,7 @@ export const useAuth = () => {
         try {
           const userData = JSON.parse(savedUser);
           if (userData.id) {
-            console.log('🔄 Rafraîchissement des données utilisateur pour:', userData.id);
+            console.log('🔄 [useAuth] Rafraîchissement des données utilisateur pour:', userData.id);
             
             const { data: updatedUser, error } = await supabase
               .from('users')
@@ -62,7 +62,7 @@ export const useAuth = () => {
                 updated_at: updatedUser.updated_at
               };
               
-              console.log('✅ Données utilisateur mises à jour:', {
+              console.log('✅ [useAuth] Données utilisateur mises à jour:', {
                 balance_deposit: formattedUser.balance_deposit,
                 balance_withdrawal: formattedUser.balance_withdrawal,
                 total_invested: formattedUser.total_invested,
@@ -74,10 +74,13 @@ export const useAuth = () => {
               
               // Déclencher une mise à jour de l'interface
               window.dispatchEvent(new CustomEvent('userDataUpdated', { detail: formattedUser }));
+              
+              // Forcer le re-render de l'interface
+              setIsAuthenticated(true);
             }
           }
         } catch (error) {
-          console.error('Erreur lors du rafraîchissement:', error);
+          console.error('❌ [useAuth] Erreur lors du rafraîchissement:', error);
         }
       }
     };

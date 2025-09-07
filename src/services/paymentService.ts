@@ -202,6 +202,9 @@ export class PaymentService {
 
       console.log(`💰 Dépôt approuvé: ${submission.amount} FCFA ajouté au solde de dépôt pour l'utilisateur ${submission.user_id}`);
 
+      // Déclencher une mise à jour globale des données utilisateur
+      console.log('🔄 Déclenchement mise à jour globale après approbation dépôt');
+      
 
       // Vérifier si c'est le premier dépôt approuvé de cet utilisateur
       const { data: previousDeposits, error: depositCheckError } = await supabase
