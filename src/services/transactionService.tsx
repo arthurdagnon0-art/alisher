@@ -117,19 +117,20 @@ export class TransactionService {
 
       const availableBalance = BalanceUtils.getTotalAvailableBalance(user);
       
-      console.log('💰 Vérification solde backend:', {
+      console.log('💰 TransactionService - Vérification solde retrait:', {
         userId,
         amount,
         fees,
         totalAmount,
         availableBalance,
         userBalanceDeposit: user.balance_deposit,
-        userBalanceWithdrawal: user.balance_withdrawal
+        userBalanceWithdrawal: user.balance_withdrawal,
+        calculatedTotal: user.balance_deposit + user.balance_withdrawal
       });
       
       // Vérifier le solde disponible (en FCFA)
       if (availableBalance < totalAmount) {
-        throw new Error(`Solde disponible insuffisant. Disponible: ${BalanceUtils.formatBalance(availableBalance)} FCFA, Requis: ${BalanceUtils.formatBalance(totalAmount)} FCFA (frais inclus)`);
+        throw new Error(`Solde disponible insuffisant. Disponible: FCFA${BalanceUtils.formatBalance(availableBalance)}, Requis: FCFA${BalanceUtils.formatBalance(totalAmount)} (frais inclus)`);
       }
 
       // Créer la transaction

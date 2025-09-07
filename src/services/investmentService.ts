@@ -207,7 +207,7 @@ export class InvestmentService {
       const availableBalance = BalanceUtils.getTotalAvailableBalance(user);
       
       if (availableBalance < amount) {
-        throw new Error('Solde insuffisant');
+        throw new Error(`Solde disponible insuffisant. Disponible: FCFA${BalanceUtils.formatBalance(availableBalance)}, Requis: FCFA${BalanceUtils.formatBalance(amount)}`);
       }
 
       // Calculer les revenus quotidiens et la date de déblocage

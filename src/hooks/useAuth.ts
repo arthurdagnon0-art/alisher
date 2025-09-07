@@ -65,7 +65,8 @@ export const useAuth = () => {
               console.log('✅ Données utilisateur mises à jour:', {
                 balance_deposit: formattedUser.balance_deposit,
                 balance_withdrawal: formattedUser.balance_withdrawal,
-                total_invested: formattedUser.total_invested
+                total_invested: formattedUser.total_invested,
+                total_available: formattedUser.balance_deposit + formattedUser.balance_withdrawal
               });
               
               setUser(formattedUser);
