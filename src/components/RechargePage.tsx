@@ -151,7 +151,7 @@ export const RechargePage: React.FC<RechargePageProps> = ({ user, onBack }) => {
         
         <div className="mt-4">
           <p className="text-sm opacity-90">Solde Disponible</p>
-          <p className="text-2xl font-bold">FCFA{BalanceUtils.formatBalance(BalanceUtils.getTotalAvailableBalance(user))}</p>
+          <p className="text-2xl font-bold">{BalanceUtils.getFormattedAvailableBalance(user)}</p>
         </div>
       </div>
 

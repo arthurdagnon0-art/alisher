@@ -143,7 +143,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
     });
 
     if (totalAmount > availableBalance) {
-      setError(`Solde disponible insuffisant. Disponible: ${BalanceUtils.formatBalance(availableBalance)} FCFA, Requis: ${BalanceUtils.formatBalance(totalAmount)} FCFA (frais inclus)`);
+      setError(`Solde disponible insuffisant. Disponible: ${BalanceUtils.getFormattedAvailableBalance(currentUser)}, Requis: FCFA${BalanceUtils.formatBalance(totalAmount)} (frais inclus)`);
       return;
     }
 
@@ -257,7 +257,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
         
         <div className="mt-4">
           <p className="text-sm opacity-90">Solde Disponible</p>
-          <p className="text-2xl font-bold">FCFA{BalanceUtils.formatBalance(BalanceUtils.getTotalAvailableBalance(currentUser))}</p>
+          <p className="text-2xl font-bold">{BalanceUtils.getFormattedAvailableBalance(currentUser)}</p>
         </div>
       </div>
 
@@ -311,7 +311,7 @@ export const WithdrawPage: React.FC<WithdrawPageProps> = ({ user, onBack }) => {
             />
             {amount && (
               <div className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
-                <p className="font-medium">Solde disponible: FCFA {BalanceUtils.formatBalance(BalanceUtils.getTotalAvailableBalance(currentUser))}</p>
+                <p className="font-medium">Solde disponible: {BalanceUtils.getFormattedAvailableBalance(currentUser)}</p>
                 <p className="text-xs text-orange-600 mt-1">
                   Frais de retrait: {platformSettings.withdrawal_fee_rate}% = FCFA {amount ? Math.round((parseFloat(amount) * (payType === 'USDT' ? platformSettings.usdt_exchange_rate : 1) * platformSettings.withdrawal_fee_rate) / 100).toLocaleString() : '0'}
                 </p>

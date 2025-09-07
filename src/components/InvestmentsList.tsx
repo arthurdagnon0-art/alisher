@@ -660,11 +660,11 @@ export const InvestmentsList: React.FC<InvestmentsListProps> = ({ onBack, user }
                   <p className="text-gray-700">
                     <strong>Solde disponible:</strong> 
                     <span className={`ml-2 font-bold ${
-                     BalanceUtils.getTotalAvailableBalance(currentUser) >= (parseFloat(investAmount) || selectedPackage?.min_amount || 0)
+                      BalanceUtils.hasSufficientBalance(currentUser, parseFloat(investAmount) || selectedPackage?.min_amount || 0)
                         ? 'text-green-600' 
                         : 'text-red-600'
                     }`}>
-                     FCFA{BalanceUtils.formatBalance(BalanceUtils.getTotalAvailableBalance(currentUser))}
+                      {BalanceUtils.getFormattedAvailableBalance(currentUser)}
                     </span>
                   </p>
                   {!BalanceUtils.hasSufficientBalance(currentUser, parseFloat(investAmount) || selectedPackage?.min_amount || 0) && (
